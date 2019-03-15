@@ -28,6 +28,11 @@ public class GameManager : MonoBehaviour
 	bool raceHasBegun;						//A flag to determine if the race has begun
 
 
+    // WATCH ALL YOUTUBE PLAYLIST FIRST IN CASE THEY SAY SOMETHING USEFUL - OTHERWISE WILL HAVE TO RESTRUCTURE currentLap AS ARRAY FOR AI
+    [SerializeField] GameObject[] aiVehicles;
+    int currentWaypoint = 0;
+
+
 	void Awake()
 	{
 		//If the variable instance has not be initialized, set it equal to this

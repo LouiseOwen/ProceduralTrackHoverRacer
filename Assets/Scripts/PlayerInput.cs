@@ -47,6 +47,15 @@ public class PlayerInput : MonoBehaviour
 
     private void FixedUpdate() // for AI stuff
     {
+        //If a GameManager exists and the game is not active...
+        if (GameManager.instance != null && !GameManager.instance.IsActiveGame()) // HAVING TO DO THIS TWICE, THERE'S PROBABLY A BETTER WAY
+        {
+            //...set all inputs to neutral values and exit this method
+            thruster = rudder = 0f;
+            isBraking = false;
+            return;
+        }
+
         if (!isHuman)
         {
             if (m_Target == null || !m_Driving) // no movement
@@ -73,7 +82,7 @@ public class PlayerInput : MonoBehaviour
                 float cautiousnessRequired = Mathf.InverseLerp(0, m_CautiousMaxAngle, Mathf.Max(spinningAngle, approachingCornerAngle));
 
                 desiredSpeed = Mathf.Lerp(m_Vehicle.terminalVelocity, m_Vehicle.terminalVelocity * m_CautiousSpeedFactor, cautiousnessRequired);
-                Debug.Log(desiredSpeed);
+                //Debug.Log(desiredSpeed);
                 // evasive cos cars
                 Vector3 offsetTargetPos = m_Target.position;
 
