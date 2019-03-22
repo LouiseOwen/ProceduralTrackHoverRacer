@@ -4,15 +4,18 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System;
+using System.Collections.Generic;
 
 public class Ship // GETTERS
 {
+    public int aiNumber;
     public int currentLap;
     public int currentWaypoint;
+    public int counter;
 
-    public Ship(int currLap, int currWaypoint)
+    public Ship(int aiNum, int currLap, int currWaypoint)
     {
+        aiNumber = aiNum;
         currentLap = currLap;
         currentWaypoint = currWaypoint;
     }
@@ -40,7 +43,7 @@ public class GameManager : MonoBehaviour
 	bool raceHasBegun;                      //A flag to determine if the race has begun
 
     //int currentWaypoint = 0; // for player
-    Ship playerShip = new Ship(0, 0);
+    Ship playerShip = new Ship(999, 0, 0);
     
     
 
@@ -52,7 +55,8 @@ public class GameManager : MonoBehaviour
     //int[] aiCurrWaypoint;
 
 
-    Ship[] racePositions; // probs gonna be ship class too
+    List<Ship> racePositions;
+    //Ship[] racePositions; // probs gonna be ship class too
 
 
 	void Awake()
@@ -93,12 +97,12 @@ public class GameManager : MonoBehaviour
         aiShips = new Ship[aiVehicles.Length];
         for (int i = 0; i < aiShips.Length; i++)
         {
-            aiShips[i] = new Ship(0, 0);
+            aiShips[i] = new Ship(i, 0, 0); // player is 0
         }
         //aiCurrLap = new int[aiVehicles.Length];
         //aiCurrWaypoint = new int[aiVehicles.Length];
 
-        racePositions = new Ship[aiShips.Length + 1]; // + 1 for player car
+
 
 	}
 
@@ -110,21 +114,21 @@ public class GameManager : MonoBehaviour
 		//If we have an active game...
 		if (IsActiveGame())
 		{
-            // place all ships into array to then be sorted (probs shouldnt do this every update)
-            for (int i = 0; i < racePositions.Length; i++)
-            {
-                if (i == racePositions.Length - 1) // to put the player in the last array slot?
-                {
-                    racePositions[i] = playerShip;
-                }
-                else
-                {
-                    racePositions[i] = aiShips[i]; // does this continually update the racePos array?
-                }
-            }
-            // !!!!!!!!!!!!!!!!!!!!!
-            Array.Sort(racePositions, delegate (Ship x, Ship y) { return x.currentLap.CompareTo(y.currentWaypoint); }); // do the sort manually
+            // clears it each frame
+            racePositions = new List<Ship>(aiVehicles.Length + 1); // + 1 for player car
 
+            racePositions.Add(playerShip);
+            for (int i = 0; i < aiShips.Length; i++)
+            {
+                racePositions.Add(aiShips[i]);
+            }
+
+            for (int i = 0; i < racePositions.Capacity; i++)
+            {
+                racePositions[i].counter = racePositions[i].currentLap * 1000 + racePositions[i].currentWaypoint * 100; // THEN YOU'LL PLUS DISTANCE HERE (DISTANCE BETWEEN WAYPOINTS MUST BE < 100 UNITS)
+            }
+
+            racePositions.Sort(delegate (Ship s1, Ship s2) { return s2.counter.CompareTo(s1.counter); });
 
 
             //...calculate the time for the lap and update the UI MAKE THIS WORK AGAIN
