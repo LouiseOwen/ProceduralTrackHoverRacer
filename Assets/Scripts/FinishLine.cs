@@ -22,5 +22,19 @@ public class FinishLine : MonoBehaviour
 			//...and deactivate the finish line until the player completes another lap
 			isReady = false;
 		}
+
+        if (other.gameObject.CompareTag("AISensor"))
+        {
+            string aiName = other.gameObject.name;
+            int aiNum;
+            string[] nameSegments = aiName.Split('_');
+            for (int i = 0; i < nameSegments.Length; i++)
+            {
+                if (int.TryParse(nameSegments[i], out aiNum))
+                {
+                    GameManager.instance.AICompletedLap(aiNum);
+                }
+            }
+        }
 	}
 }

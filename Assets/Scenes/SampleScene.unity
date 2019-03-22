@@ -390,8 +390,8 @@ GameObject:
   - component: {fileID: 169508013}
   - component: {fileID: 169508006}
   m_Layer: 0
-  m_Name: AI Ship
-  m_TagString: Untagged
+  m_Name: AI_Ship_0
+  m_TagString: AISensor
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -15591,7 +15591,8 @@ MonoBehaviour:
   shipUI: {fileID: 0}
   lapTimeUI: {fileID: 0}
   gameOverUI: {fileID: 1112614085}
-  aiVehicles: []
+  aiVehicles:
+  - {fileID: 169508005}
 --- !u!4 &1335239256
 Transform:
   m_ObjectHideFlags: 0

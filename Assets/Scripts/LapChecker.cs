@@ -2,7 +2,7 @@
 //script once the player comes close to completing a full lap
 
 using UnityEngine;
-
+// THIS SCRIPT CHECKS THE LAST CHECKPOINT SO THAT THEY DON'T CHEAT - CAN PROBS CHANGE IT SO THAT WAYPOINTCHECKER KNOWS LAST WAYPOINT AND CHECKS AGAINST THAT
 public class LapChecker : MonoBehaviour
 {
 	public FinishLine finishLine;	//Reference to the FinishLine script

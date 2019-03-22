@@ -28,8 +28,6 @@ public class RoadMaker : MonoBehaviour
 
     private bool stripeCheck = true; // for the edge walls (to make stripey)
 
-    //public NavMeshSurface[] surfaces; // NAV MESH STUFF
-
     [SerializeField] private GameObject waypoint;
     [SerializeField] private Transform waypoints;
     [SerializeField] private WaypointCircuit waypointCircuit;
@@ -86,19 +84,18 @@ public class RoadMaker : MonoBehaviour
         meshFilter.mesh = mb.CreateMesh();
         meshCollider.sharedMesh = meshFilter.mesh;
 
-        // NAV MESH STUFF
-        //for (int i = 0; i < surfaces.Length; i++)
-        //{
-        //    surfaces[i].BuildNavMesh();
-        //}
-
         Vector3 current = points[0];
         for (int i = 1; i < points.Count; i++)
         {
             if (Vector3.Angle(current, points[i]) > 22.5f)
             {
-                GameObject newWaypoint = Instantiate(waypoint, points[i], Quaternion.identity, waypoints);
+                Vector3 forward = (points[i + 1] - points[i]).normalized;
+                Quaternion lookRot = Quaternion.LookRotation(forward);
+                GameObject newWaypoint = Instantiate(waypoint, points[i], lookRot, waypoints);
                 newWaypoint.name = "Waypoint " + waypoints.childCount.ToString("000");
+                Vector3 scale = newWaypoint.transform.localScale;
+                scale.x = roadWidth * 2.0f;
+                newWaypoint.transform.localScale = scale;
                 current = points[i];
             }
         }

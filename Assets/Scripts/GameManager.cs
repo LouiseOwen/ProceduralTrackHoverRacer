@@ -4,7 +4,19 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System;
 
+public class Ship // GETTERS
+{
+    public int currentLap;
+    public int currentWaypoint;
+
+    public Ship(int currLap, int currWaypoint)
+    {
+        currentLap = currLap;
+        currentWaypoint = currWaypoint;
+    }
+}
 
 public class GameManager : MonoBehaviour
 {
@@ -23,14 +35,24 @@ public class GameManager : MonoBehaviour
 	public GameObject gameOverUI;			//A reference to the UI objects that appears when the game is complete
 
 	float[] lapTimes;						//An array containing the player's lap times
-	int currentLap = 0;						//The current lap the player is on
+	//int currentLap = 0;						//The current lap the player is on
 	bool isGameOver;						//A flag to determine if the game is over
-	bool raceHasBegun;						//A flag to determine if the race has begun
+	bool raceHasBegun;                      //A flag to determine if the race has begun
+
+    //int currentWaypoint = 0; // for player
+    Ship playerShip = new Ship(0, 0);
+    
+    
 
 
-    // WATCH ALL YOUTUBE PLAYLIST FIRST IN CASE THEY SAY SOMETHING USEFUL - OTHERWISE WILL HAVE TO RESTRUCTURE currentLap AS ARRAY FOR AI
-    [SerializeField] GameObject[] aiVehicles;
-    int currentWaypoint = 0;
+
+    [SerializeField] GameObject[] aiVehicles; // just for a count really, probs a better way of doing this
+    Ship[] aiShips;
+    //int[] aiCurrLap;
+    //int[] aiCurrWaypoint;
+
+
+    Ship[] racePositions; // probs gonna be ship class too
 
 
 	void Awake()
@@ -65,6 +87,19 @@ public class GameManager : MonoBehaviour
 		//Initialize the lapTimes array and set that the race has begun
 		lapTimes = new float[numberOfLaps];
 		raceHasBegun = true;
+
+        //Initialise AI stuff
+        aiVehicles = new GameObject[aiVehicles.Length];
+        aiShips = new Ship[aiVehicles.Length];
+        for (int i = 0; i < aiShips.Length; i++)
+        {
+            aiShips[i] = new Ship(0, 0);
+        }
+        //aiCurrLap = new int[aiVehicles.Length];
+        //aiCurrWaypoint = new int[aiVehicles.Length];
+
+        racePositions = new Ship[aiShips.Length + 1]; // + 1 for player car
+
 	}
 
 	void Update()
@@ -75,8 +110,25 @@ public class GameManager : MonoBehaviour
 		//If we have an active game...
 		if (IsActiveGame())
 		{
-			//...calculate the time for the lap and update the UI
-			lapTimes[currentLap] += Time.deltaTime;
+            // place all ships into array to then be sorted (probs shouldnt do this every update)
+            for (int i = 0; i < racePositions.Length; i++)
+            {
+                if (i == racePositions.Length - 1) // to put the player in the last array slot?
+                {
+                    racePositions[i] = playerShip;
+                }
+                else
+                {
+                    racePositions[i] = aiShips[i]; // does this continually update the racePos array?
+                }
+            }
+            // !!!!!!!!!!!!!!!!!!!!!
+            Array.Sort(racePositions, delegate (Ship x, Ship y) { return x.currentLap.CompareTo(y.currentWaypoint); }); // do the sort manually
+
+
+
+            //...calculate the time for the lap and update the UI MAKE THIS WORK AGAIN
+            lapTimes[/*currentLap*/playerShip.currentLap] += Time.deltaTime;
 			UpdateUI_LapTime();
 		}
 	}
@@ -89,13 +141,13 @@ public class GameManager : MonoBehaviour
 			return;
 
 		//Incrememebt the current lap
-		currentLap++;
+		playerShip.currentLap++;
 
 		//Update the lap number UI on the ship
 		UpdateUI_LapNumber ();
 
 		//If the player has completed the required amount of laps...
-		if (currentLap >= numberOfLaps)
+		if (playerShip.currentLap >= numberOfLaps)
 		{
 			//...the game is now over...
 			isGameOver = true;
@@ -106,11 +158,37 @@ public class GameManager : MonoBehaviour
 		}
 	}
 
+    public void AICompletedLap(int aiNum)
+    {
+        if (isGameOver)
+            return;
+
+        aiShips[aiNum].currentLap++;
+
+        if (aiShips[aiNum].currentLap >= numberOfLaps)
+        {
+            Debug.Log("AI HAS FINISHED RACE");
+            // it's ai? probs just keep going
+        }
+    }
+
+    public void PlayerPassedWaypoint(int waypoint)
+    {
+        playerShip.currentWaypoint = waypoint;
+        Debug.Log("player passed waypoint: " + waypoint);
+    }
+
+    public void AIPassedWaypoint(int aiNum, int waypoint)
+    {
+        aiShips[aiNum].currentWaypoint = waypoint;
+        Debug.Log("AI: " + aiNum + " has passed: " + waypoint);
+    }
+
 	void UpdateUI_LapTime()
 	{
 		//If we have a LapTimeUI reference, update it
 		if (lapTimeUI != null)
-			lapTimeUI.SetLapTime(currentLap, lapTimes[currentLap]);
+			lapTimeUI.SetLapTime(playerShip.currentLap, lapTimes[playerShip.currentLap]);
 	}
 
 	void UpdateUI_FinalTime()
@@ -133,7 +211,7 @@ public class GameManager : MonoBehaviour
 	{
 		//If we have a ShipUI reference, update it
 		if (shipUI != null) 
-			shipUI.SetLapDisplay (currentLap + 1, numberOfLaps);
+			shipUI.SetLapDisplay (playerShip.currentLap + 1, numberOfLaps);
 	}
 
 	void UpdateUI_Speed()
