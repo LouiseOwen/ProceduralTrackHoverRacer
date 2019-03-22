@@ -38,25 +38,16 @@ public class GameManager : MonoBehaviour
 	public GameObject gameOverUI;			//A reference to the UI objects that appears when the game is complete
 
 	float[] lapTimes;						//An array containing the player's lap times
-	//int currentLap = 0;						//The current lap the player is on
 	bool isGameOver;						//A flag to determine if the game is over
 	bool raceHasBegun;                      //A flag to determine if the race has begun
-
-    //int currentWaypoint = 0; // for player
-    Ship playerShip = new Ship(999, 0, 0);
+    Ship playerShip = new Ship(999, 0, 0); // to store player ship details
     
-    
-
-
-
+    // AI
     [SerializeField] GameObject[] aiVehicles; // just for a count really, probs a better way of doing this
     Ship[] aiShips;
-    //int[] aiCurrLap;
-    //int[] aiCurrWaypoint;
 
-
+    // Race management
     List<Ship> racePositions;
-    //Ship[] racePositions; // probs gonna be ship class too
 
 
 	void Awake()
@@ -97,13 +88,8 @@ public class GameManager : MonoBehaviour
         aiShips = new Ship[aiVehicles.Length];
         for (int i = 0; i < aiShips.Length; i++)
         {
-            aiShips[i] = new Ship(i, 0, 0); // player is 0
+            aiShips[i] = new Ship(i, 0, 0);
         }
-        //aiCurrLap = new int[aiVehicles.Length];
-        //aiCurrWaypoint = new int[aiVehicles.Length];
-
-
-
 	}
 
 	void Update()
@@ -114,25 +100,26 @@ public class GameManager : MonoBehaviour
 		//If we have an active game...
 		if (IsActiveGame())
 		{
-            // clears it each frame
-            racePositions = new List<Ship>(aiVehicles.Length + 1); // + 1 for player car
 
+
+            // clears it each frame, there will be a more efficient way of doing this, just leaving it here for now
+            racePositions = new List<Ship>(aiVehicles.Length + 1); // + 1 for player car
             racePositions.Add(playerShip);
             for (int i = 0; i < aiShips.Length; i++)
             {
                 racePositions.Add(aiShips[i]);
             }
 
+            // calculate the counter value for each car, then sort it based on this value to determine who is what rank
             for (int i = 0; i < racePositions.Capacity; i++)
             {
                 racePositions[i].counter = racePositions[i].currentLap * 1000 + racePositions[i].currentWaypoint * 100; // THEN YOU'LL PLUS DISTANCE HERE (DISTANCE BETWEEN WAYPOINTS MUST BE < 100 UNITS)
             }
-
             racePositions.Sort(delegate (Ship s1, Ship s2) { return s2.counter.CompareTo(s1.counter); });
 
 
             //...calculate the time for the lap and update the UI MAKE THIS WORK AGAIN
-            lapTimes[/*currentLap*/playerShip.currentLap] += Time.deltaTime;
+            lapTimes[playerShip.currentLap] += Time.deltaTime;
 			UpdateUI_LapTime();
 		}
 	}
@@ -171,7 +158,7 @@ public class GameManager : MonoBehaviour
 
         if (aiShips[aiNum].currentLap >= numberOfLaps)
         {
-            Debug.Log("AI HAS FINISHED RACE");
+            Debug.Log("AI " + aiNum + " HAS FINISHED RACE");
             // it's ai? probs just keep going
         }
     }
