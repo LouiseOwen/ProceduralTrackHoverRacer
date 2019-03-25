@@ -11,13 +11,15 @@ public class Ship // GETTERS
     public int aiNumber;
     public int currentLap;
     public int currentWaypoint;
-    public int counter;
+    public Vector3 currentPosition;
+    public float counter;
 
-    public Ship(int aiNum, int currLap, int currWaypoint)
+    public Ship(int aiNum, int currLap, int currWaypoint, Vector3 currPos)
     {
         aiNumber = aiNum;
         currentLap = currLap;
         currentWaypoint = currWaypoint;
+        currentPosition = currPos;
     }
 }
 
@@ -40,13 +42,16 @@ public class GameManager : MonoBehaviour
 	float[] lapTimes;						//An array containing the player's lap times
 	bool isGameOver;						//A flag to determine if the game is over
 	bool raceHasBegun;                      //A flag to determine if the race has begun
-    Ship playerShip = new Ship(999, 0, 0); // to store player ship details
+    [SerializeField] GameObject playerShipObj;
+    Ship playerShip = new Ship(999, 0, 0, Vector3.zero); // to store player ship details
     
     // AI
     [SerializeField] GameObject[] aiVehicles; // just for a count really, probs a better way of doing this
     Ship[] aiShips;
 
     // Race management
+    [SerializeField] GameObject waypointsObj; // to find the exact position of a waypoint
+    Vector3[] waypoints;
     List<Ship> racePositions;
 
 
@@ -83,12 +88,22 @@ public class GameManager : MonoBehaviour
 		lapTimes = new float[numberOfLaps];
 		raceHasBegun = true;
 
+        //Initialise Player
+        playerShip.currentPosition = playerShipObj.transform.position;
+
         //Initialise AI stuff
-        aiVehicles = new GameObject[aiVehicles.Length];
+        //aiVehicles = new GameObject[aiVehicles.Length]; // DON'T DO THIS NUMPTY! YOU DON'T WANT A BRAND NEW ARRAY
         aiShips = new Ship[aiVehicles.Length];
         for (int i = 0; i < aiShips.Length; i++)
         {
-            aiShips[i] = new Ship(i, 0, 0);
+            aiShips[i] = new Ship(i, 0, 0, aiVehicles[i].transform.position);
+        }
+
+        //Initialise Waypoints
+        waypoints = new Vector3[waypointsObj.transform.childCount];
+        for (int i = 0; i < waypoints.Length; i++)
+        {
+            waypoints[i] = waypointsObj.transform.GetChild(i).transform.position;
         }
 	}
 
@@ -104,16 +119,19 @@ public class GameManager : MonoBehaviour
 
             // clears it each frame, there will be a more efficient way of doing this, just leaving it here for now
             racePositions = new List<Ship>(aiVehicles.Length + 1); // + 1 for player car
+            playerShip.currentPosition = playerShipObj.transform.position;
             racePositions.Add(playerShip);
             for (int i = 0; i < aiShips.Length; i++)
             {
+                aiShips[i].currentPosition = aiVehicles[i].transform.position;
                 racePositions.Add(aiShips[i]);
             }
 
             // calculate the counter value for each car, then sort it based on this value to determine who is what rank
             for (int i = 0; i < racePositions.Capacity; i++)
             {
-                racePositions[i].counter = racePositions[i].currentLap * 1000 + racePositions[i].currentWaypoint * 100; // THEN YOU'LL PLUS DISTANCE HERE (DISTANCE BETWEEN WAYPOINTS MUST BE < 100 UNITS)
+                float distFromPrevWaypoint = GetFractionOfPathCovered(racePositions[i].currentPosition, waypoints[racePositions[i].currentWaypoint % waypoints.Length], waypoints[(racePositions[i].currentWaypoint + 1) % waypoints.Length]);
+                racePositions[i].counter = racePositions[i].currentLap * 1000.0f + racePositions[i].currentWaypoint * 100.0f + distFromPrevWaypoint;
             }
             racePositions.Sort(delegate (Ship s1, Ship s2) { return s2.counter.CompareTo(s1.counter); });
 
@@ -123,6 +141,15 @@ public class GameManager : MonoBehaviour
 			UpdateUI_LapTime();
 		}
 	}
+
+    public float GetFractionOfPathCovered(Vector3 position, Vector3 currWaypoint, Vector3 nextWaypoint)
+    {
+        Vector3 distFromCurrWaypoint = position - currWaypoint;
+        Vector3 currSegmentVector = nextWaypoint - currWaypoint;
+        float fraction = Vector3.Dot(distFromCurrWaypoint, currSegmentVector) / currSegmentVector.sqrMagnitude;
+
+        return fraction;
+    }
 
 	//Called by the FinishLine script
 	public void PlayerCompletedLap()

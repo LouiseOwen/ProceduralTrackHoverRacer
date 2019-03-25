@@ -15591,8 +15591,10 @@ MonoBehaviour:
   shipUI: {fileID: 0}
   lapTimeUI: {fileID: 0}
   gameOverUI: {fileID: 1112614085}
+  playerShipObj: {fileID: 1254337042}
   aiVehicles:
   - {fileID: 169508005}
+  waypointsObj: {fileID: 269158172}
 --- !u!4 &1335239256
 Transform:
   m_ObjectHideFlags: 0
