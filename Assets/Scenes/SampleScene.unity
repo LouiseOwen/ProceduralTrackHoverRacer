@@ -973,10 +973,10 @@ MonoBehaviour:
   isBraking: 0
   m_Target: {fileID: 1533087643}
   m_Driving: 1
-  m_CautiousAngularVelocityFactor: 100
-  m_CautiousMaxAngle: 90
+  m_CautiousAngularVelocityFactor: 30
+  m_CautiousMaxAngle: 70
   m_CautiousSpeedFactor: 0.6
-  m_LateralWanderSpeed: 0.2
+  m_LateralWanderSpeed: 0.8
   m_LateralWanderDistance: 10
   m_BrakeSensitivity: 1
   m_AccelSensitivity: 0.5
@@ -5763,10 +5763,10 @@ MonoBehaviour:
   isBraking: 0
   m_Target: {fileID: 2105899409}
   m_Driving: 1
-  m_CautiousAngularVelocityFactor: 100
-  m_CautiousMaxAngle: 90
+  m_CautiousAngularVelocityFactor: 30
+  m_CautiousMaxAngle: 70
   m_CautiousSpeedFactor: 0.6
-  m_LateralWanderSpeed: 0.2
+  m_LateralWanderSpeed: 0.8
   m_LateralWanderDistance: 10
   m_BrakeSensitivity: 1
   m_AccelSensitivity: 0.5
@@ -11310,10 +11310,10 @@ MonoBehaviour:
   isBraking: 0
   m_Target: {fileID: 561142439}
   m_Driving: 1
-  m_CautiousAngularVelocityFactor: 100
-  m_CautiousMaxAngle: 90
+  m_CautiousAngularVelocityFactor: 30
+  m_CautiousMaxAngle: 70
   m_CautiousSpeedFactor: 0.6
-  m_LateralWanderSpeed: 0.2
+  m_LateralWanderSpeed: 0.8
   m_LateralWanderDistance: 10
   m_BrakeSensitivity: 1
   m_AccelSensitivity: 0.5
@@ -70095,10 +70095,10 @@ MonoBehaviour:
   isBraking: 0
   m_Target: {fileID: 1985098849}
   m_Driving: 1
-  m_CautiousAngularVelocityFactor: 100
-  m_CautiousMaxAngle: 90
+  m_CautiousAngularVelocityFactor: 30
+  m_CautiousMaxAngle: 70
   m_CautiousSpeedFactor: 0.6
-  m_LateralWanderSpeed: 0.2
+  m_LateralWanderSpeed: 0.8
   m_LateralWanderDistance: 10
   m_BrakeSensitivity: 1
   m_AccelSensitivity: 0.5

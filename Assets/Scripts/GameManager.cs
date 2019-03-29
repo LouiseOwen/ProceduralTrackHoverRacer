@@ -137,10 +137,8 @@ public class GameManager : MonoBehaviour
 
         //Initialise Player
         playerShip.SetCurrPos(playerShipObj.transform.position);
-        //playerShip.currentPosition = playerShipObj.transform.position;
 
         //Initialise AI stuff
-        //aiVehicles = new GameObject[aiVehicles.Length]; // DON'T DO THIS NUMPTY! YOU DON'T WANT A BRAND NEW ARRAY
         aiShips = new Ship[aiVehicles.Length];
         for (int i = 0; i < aiShips.Length; i++)
         {
@@ -168,12 +166,10 @@ public class GameManager : MonoBehaviour
             // clears it each frame, there will be a more efficient way of doing this, just leaving it here for now
             racePositions = new List<Ship>(aiVehicles.Length + 1); // + 1 for player car
             playerShip.SetCurrPos(playerShipObj.transform.position);
-            //playerShip.currentPosition = playerShipObj.transform.position;
             racePositions.Add(playerShip);
             for (int i = 0; i < aiShips.Length; i++)
             {
                 aiShips[i].SetCurrPos(aiVehicles[i].transform.position);
-                //aiShips[i].currentPosition = aiVehicles[i].transform.position;
                 racePositions.Add(aiShips[i]);
             }
 
@@ -182,7 +178,6 @@ public class GameManager : MonoBehaviour
             {
                 float distFromPrevWaypoint = GetFractionOfPathCovered(racePositions[i].GetCurrPos(), waypoints[racePositions[i].GetCurrWaypoint() % waypoints.Length], waypoints[(racePositions[i].GetCurrWaypoint() + 1) % waypoints.Length]);
                 racePositions[i].SetCounter(racePositions[i].GetCurrLap() * 1000.0f + racePositions[i].GetCurrWaypoint() * 100.0f + distFromPrevWaypoint);
-                //racePositions[i].counter = racePositions[i].currentLap * 1000.0f + racePositions[i].currentWaypoint * 100.0f + distFromPrevWaypoint;
             }
             racePositions.Sort(delegate (Ship s1, Ship s2) { return s2.GetCounter().CompareTo(s1.GetCounter()); });
 
