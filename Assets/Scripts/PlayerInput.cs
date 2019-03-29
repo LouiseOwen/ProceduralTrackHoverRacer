@@ -48,7 +48,7 @@ public class PlayerInput : MonoBehaviour
     private void FixedUpdate() // for AI stuff
     {
         //If a GameManager exists and the game is not active...
-        if (GameManager.instance != null && !GameManager.instance.IsActiveGame()) // HAVING TO DO THIS TWICE, THERE'S PROBABLY A BETTER WAY
+        if (GameManager.instance != null && !GameManager.instance.IsActiveGame())
         {
             //...set all inputs to neutral values and exit this method
             thruster = rudder = 0f;
@@ -86,13 +86,13 @@ public class PlayerInput : MonoBehaviour
                 // evasive cos cars
                 Vector3 offsetTargetPos = m_Target.position;
 
-                //if (Time.time < m_AvoidOtherCarTime)
-                //{
-                //    desiredSpeed *= m_AvoidOtherCarSlowdown;
+                if (Time.time < m_AvoidOtherCarTime)
+                {
+                    desiredSpeed *= m_AvoidOtherCarSlowdown;
 
-                //    offsetTargetPos += m_Target.right * m_AvoidPathOffset;
-                //}
-                //else
+                    offsetTargetPos += m_Target.right * m_AvoidPathOffset;
+                }
+                else
                 {
                     offsetTargetPos += m_Target.right * (Mathf.PerlinNoise(Time.time * m_LateralWanderSpeed, m_RandomPerlin) * 2 - 1) * m_LateralWanderDistance; // adding sideways wander to path
                 }
@@ -148,6 +148,44 @@ public class PlayerInput : MonoBehaviour
             isBraking = Input.GetButton(brakingKey);
         }
 	}
+
+    private void OnCollisionStay(Collision col)
+    {
+        // detect collision against other cars, so that we can take evasive action
+        if (col.rigidbody != null)
+        {
+            var otherCar = col.rigidbody.GetComponent<PlayerInput>();
+
+            if (isHuman)
+            {
+                return;
+            }
+
+            if (otherCar != null)
+            {
+                // we'll take evasive action for 1 second
+                m_AvoidOtherCarTime = Time.time + 1;
+
+                // but who's in front?...
+                if (Vector3.Angle(transform.forward, otherCar.transform.position - transform.position) < 90)
+                {
+                    // the other ai is in front, so it is only good manners that we ought to brake...
+                    m_AvoidOtherCarSlowdown = 0.5f;
+                }
+                else
+                {
+                    // we're in front! ain't slowing down for anybody...
+                    m_AvoidOtherCarSlowdown = 1;
+                }
+
+                // both cars should take evasive action by driving along an offset from the path centre,
+                // away from the other car
+                var otherCarLocalDelta = transform.InverseTransformPoint(otherCar.transform.position);
+                float otherCarAngle = Mathf.Atan2(otherCarLocalDelta.x, otherCarLocalDelta.z);
+                m_AvoidPathOffset = m_LateralWanderDistance * -Mathf.Sign(otherCarAngle);
+            }
+        }
+    }
 
     public void SetTarget(Transform target)
     {

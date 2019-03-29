@@ -6,13 +6,13 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
-public class Ship // GETTERS
+public class Ship
 {
-    public int aiNumber;
-    public int currentLap;
-    public int currentWaypoint;
-    public Vector3 currentPosition;
-    public float counter;
+    private int aiNumber;
+    private int currentLap;
+    private int currentWaypoint;
+    private Vector3 currentPosition;
+    private float counter;
 
     public Ship(int aiNum, int currLap, int currWaypoint, Vector3 currPos)
     {
@@ -20,6 +20,53 @@ public class Ship // GETTERS
         currentLap = currLap;
         currentWaypoint = currWaypoint;
         currentPosition = currPos;
+    }
+
+    // Getters
+    public int GetAINumber()
+    {
+        return aiNumber;
+    }
+
+    public int GetCurrLap()
+    {
+        return currentLap;
+    }
+
+    public int GetCurrWaypoint()
+    {
+        return currentWaypoint;
+    }
+
+    public Vector3 GetCurrPos()
+    {
+        return currentPosition;
+    }
+
+    public float GetCounter()
+    {
+        return counter;
+    }
+
+    // Setters
+    public void SetCurrPos(Vector3 currPos)
+    {
+        currentPosition = currPos;
+    }
+
+    public void SetCounter(float counterCalc)
+    {
+        counter = counterCalc;
+    }
+
+    public void IncrementCurrLap()
+    {
+        currentLap++;
+    }
+
+    public void SetCurrWaypoint(int currWaypoint)
+    {
+        currentWaypoint = currWaypoint;
     }
 }
 
@@ -89,7 +136,8 @@ public class GameManager : MonoBehaviour
 		raceHasBegun = true;
 
         //Initialise Player
-        playerShip.currentPosition = playerShipObj.transform.position;
+        playerShip.SetCurrPos(playerShipObj.transform.position);
+        //playerShip.currentPosition = playerShipObj.transform.position;
 
         //Initialise AI stuff
         //aiVehicles = new GameObject[aiVehicles.Length]; // DON'T DO THIS NUMPTY! YOU DON'T WANT A BRAND NEW ARRAY
@@ -119,25 +167,33 @@ public class GameManager : MonoBehaviour
 
             // clears it each frame, there will be a more efficient way of doing this, just leaving it here for now
             racePositions = new List<Ship>(aiVehicles.Length + 1); // + 1 for player car
-            playerShip.currentPosition = playerShipObj.transform.position;
+            playerShip.SetCurrPos(playerShipObj.transform.position);
+            //playerShip.currentPosition = playerShipObj.transform.position;
             racePositions.Add(playerShip);
             for (int i = 0; i < aiShips.Length; i++)
             {
-                aiShips[i].currentPosition = aiVehicles[i].transform.position;
+                aiShips[i].SetCurrPos(aiVehicles[i].transform.position);
+                //aiShips[i].currentPosition = aiVehicles[i].transform.position;
                 racePositions.Add(aiShips[i]);
             }
 
             // calculate the counter value for each car, then sort it based on this value to determine who is what rank
             for (int i = 0; i < racePositions.Capacity; i++)
             {
-                float distFromPrevWaypoint = GetFractionOfPathCovered(racePositions[i].currentPosition, waypoints[racePositions[i].currentWaypoint % waypoints.Length], waypoints[(racePositions[i].currentWaypoint + 1) % waypoints.Length]);
-                racePositions[i].counter = racePositions[i].currentLap * 1000.0f + racePositions[i].currentWaypoint * 100.0f + distFromPrevWaypoint;
+                float distFromPrevWaypoint = GetFractionOfPathCovered(racePositions[i].GetCurrPos(), waypoints[racePositions[i].GetCurrWaypoint() % waypoints.Length], waypoints[(racePositions[i].GetCurrWaypoint() + 1) % waypoints.Length]);
+                racePositions[i].SetCounter(racePositions[i].GetCurrLap() * 1000.0f + racePositions[i].GetCurrWaypoint() * 100.0f + distFromPrevWaypoint);
+                //racePositions[i].counter = racePositions[i].currentLap * 1000.0f + racePositions[i].currentWaypoint * 100.0f + distFromPrevWaypoint;
             }
-            racePositions.Sort(delegate (Ship s1, Ship s2) { return s2.counter.CompareTo(s1.counter); });
+            racePositions.Sort(delegate (Ship s1, Ship s2) { return s2.GetCounter().CompareTo(s1.GetCounter()); });
+
+
+            // DYNAMIC DIFFICULTY ADJUST HERE!!!
+
+
 
 
             //...calculate the time for the lap and update the UI MAKE THIS WORK AGAIN
-            lapTimes[playerShip.currentLap] += Time.deltaTime;
+            lapTimes[playerShip.GetCurrLap()] += Time.deltaTime;
 			UpdateUI_LapTime();
 		}
 	}
@@ -159,13 +215,13 @@ public class GameManager : MonoBehaviour
 			return;
 
 		//Incrememebt the current lap
-		playerShip.currentLap++;
+		playerShip.IncrementCurrLap();
 
 		//Update the lap number UI on the ship
 		UpdateUI_LapNumber ();
 
 		//If the player has completed the required amount of laps...
-		if (playerShip.currentLap >= numberOfLaps)
+		if (playerShip.GetCurrLap() >= numberOfLaps)
 		{
 			//...the game is now over...
 			isGameOver = true;
@@ -181,9 +237,9 @@ public class GameManager : MonoBehaviour
         if (isGameOver)
             return;
 
-        aiShips[aiNum].currentLap++;
+        aiShips[aiNum].IncrementCurrLap();
 
-        if (aiShips[aiNum].currentLap >= numberOfLaps)
+        if (aiShips[aiNum].GetCurrLap() >= numberOfLaps)
         {
             Debug.Log("AI " + aiNum + " HAS FINISHED RACE");
             // it's ai? probs just keep going
@@ -192,13 +248,13 @@ public class GameManager : MonoBehaviour
 
     public void PlayerPassedWaypoint(int waypoint)
     {
-        playerShip.currentWaypoint = waypoint;
+        playerShip.SetCurrWaypoint(waypoint);
         Debug.Log("player passed waypoint: " + waypoint);
     }
 
     public void AIPassedWaypoint(int aiNum, int waypoint)
     {
-        aiShips[aiNum].currentWaypoint = waypoint;
+        aiShips[aiNum].SetCurrWaypoint(waypoint);
         Debug.Log("AI: " + aiNum + " has passed: " + waypoint);
     }
 
@@ -206,7 +262,7 @@ public class GameManager : MonoBehaviour
 	{
 		//If we have a LapTimeUI reference, update it
 		if (lapTimeUI != null)
-			lapTimeUI.SetLapTime(playerShip.currentLap, lapTimes[playerShip.currentLap]);
+			lapTimeUI.SetLapTime(playerShip.GetCurrLap(), lapTimes[playerShip.GetCurrLap()]);
 	}
 
 	void UpdateUI_FinalTime()
@@ -229,7 +285,7 @@ public class GameManager : MonoBehaviour
 	{
 		//If we have a ShipUI reference, update it
 		if (shipUI != null) 
-			shipUI.SetLapDisplay (playerShip.currentLap + 1, numberOfLaps);
+			shipUI.SetLapDisplay (playerShip.GetCurrLap() + 1, numberOfLaps);
 	}
 
 	void UpdateUI_Speed()
