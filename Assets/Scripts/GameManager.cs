@@ -6,17 +6,22 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 
+//seperate these
+public enum AIType { Advanced, Middle, Back, Close, Not }
+
 public class Ship
 {
     private int aiNumber;
+    private AIType aiType;
     private int currentLap;
     private int currentWaypoint;
     private Vector3 currentPosition;
     private float counter;
 
-    public Ship(int aiNum, int currLap, int currWaypoint, Vector3 currPos)
+    public Ship(int aiNum, AIType type, int currLap, int currWaypoint, Vector3 currPos)
     {
         aiNumber = aiNum;
+        aiType = type;
         currentLap = currLap;
         currentWaypoint = currWaypoint;
         currentPosition = currPos;
@@ -26,6 +31,11 @@ public class Ship
     public int GetAINumber()
     {
         return aiNumber;
+    }
+
+    public AIType GetAIType()
+    {
+        return aiType;
     }
 
     public int GetCurrLap()
@@ -68,6 +78,11 @@ public class Ship
     {
         currentWaypoint = currWaypoint;
     }
+
+    public void SetAIType(AIType type)
+    {
+        aiType = type;
+    }
 }
 
 public class GameManager : MonoBehaviour
@@ -90,7 +105,7 @@ public class GameManager : MonoBehaviour
 	bool isGameOver;						//A flag to determine if the game is over
 	bool raceHasBegun;                      //A flag to determine if the race has begun
     [SerializeField] GameObject playerShipObj;
-    Ship playerShip = new Ship(999, 0, 0, Vector3.zero); // to store player ship details
+    Ship playerShip = new Ship(999, AIType.Not, 0, 0, Vector3.zero); // to store player ship details
     
     // AI
     [SerializeField] GameObject[] aiVehicles; // just for a count really, probs a better way of doing this
@@ -142,8 +157,15 @@ public class GameManager : MonoBehaviour
         aiShips = new Ship[aiVehicles.Length];
         for (int i = 0; i < aiShips.Length; i++)
         {
-            aiShips[i] = new Ship(i, 0, 0, aiVehicles[i].transform.position);
+            aiShips[i] = new Ship(i, AIType.Not, 0, 0, aiVehicles[i].transform.position);
         }
+        // FIND WAY TO SORT THIS OUT? - or just hardcode it
+        aiShips[0].SetAIType(AIType.Advanced);
+        aiShips[1].SetAIType(AIType.Middle);
+        aiShips[2].SetAIType(AIType.Back);
+        aiShips[3].SetAIType(AIType.Close);
+
+
 
         //Initialise Waypoints
         waypoints = new Vector3[waypointsObj.transform.childCount];
@@ -177,13 +199,49 @@ public class GameManager : MonoBehaviour
             for (int i = 0; i < racePositions.Capacity; i++)
             {
                 float distFromPrevWaypoint = GetFractionOfPathCovered(racePositions[i].GetCurrPos(), waypoints[racePositions[i].GetCurrWaypoint() % waypoints.Length], waypoints[(racePositions[i].GetCurrWaypoint() + 1) % waypoints.Length]);
-                racePositions[i].SetCounter(racePositions[i].GetCurrLap() * 1000.0f + racePositions[i].GetCurrWaypoint() * 100.0f + distFromPrevWaypoint);
+                racePositions[i].SetCounter(racePositions[i].GetCurrLap() * 1000.0f + racePositions[i].GetCurrWaypoint() * 100.0f + distFromPrevWaypoint); // MAGIC
             }
             racePositions.Sort(delegate (Ship s1, Ship s2) { return s2.GetCounter().CompareTo(s1.GetCounter()); });
 
 
             // DYNAMIC DIFFICULTY ADJUST HERE!!!
-
+            for (int i = 0; i < aiShips.Length; i++)
+            {
+                if (aiShips[i].GetAIType() == AIType.Advanced)
+                {
+                    //Debug.Log(aiShips[i].GetAINumber() + " wants to be ahead!");
+                    // get the checkpoint (counter value) 4 in front of players checkpoint
+                    Debug.Log("player ship current counter: " + playerShip.GetCounter());
+                    Debug.Log(/*"value should be 4 checkpoints ahead of player: " + */playerShip.GetCounter() + 400.0f); // text caused error for some reason? MAGIC NUM
+                    // if they are behind that value then gradually increase their skills
+                    // if they are in front of that value then gradually reduce their skills
+                    // if they are at that value then keep steady
+                }
+                else if (aiShips[i].GetAIType() == AIType.Middle)
+                {
+                    //Debug.Log(aiShips[i].GetAINumber() + " wants to be in the middle.");
+                    // get the checkpoint (counter value) 2 in front of the players checkpoint
+                    // if they are behind that value then gradually increase their skills
+                    // if they are in front of that value then gradually reduce their skills
+                    // if they are at that value then keep steady
+                }
+                else if (aiShips[i].GetAIType() == AIType.Back)
+                {
+                    //Debug.Log(aiShips[i].GetAINumber() + " wants to be behind.");
+                    // get the checkpoint (counter value) 4 BEHIND the players checkpoint
+                    // if they are behind that value then gradually increase their skills
+                    // if they are in front of that value then gradually reduce their skills
+                    // if they are at that value then keep steady
+                }
+                else if (aiShips[i].GetAIType() == AIType.Close)
+                {
+                    //Debug.Log(aiShips[i].GetAINumber() + " wants to be close.");
+                    // get the checkpoint (counter value) of the players checkpoint
+                    // if they are behind that value then gradually increase their skills
+                    // if they are in front of that value then gradually reduce their skills
+                    // if they are at that value then keep steady
+                }
+            }
 
 
 
