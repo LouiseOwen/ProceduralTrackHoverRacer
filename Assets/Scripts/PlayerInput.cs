@@ -4,6 +4,7 @@
 
 using UnityEngine;
 
+// CAN PROBABLY SPLIT THIS INTO TWO CLASSES (Human and AI)
 public class PlayerInput : MonoBehaviour
 {
     public bool isHuman;
