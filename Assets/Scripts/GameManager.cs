@@ -208,94 +208,114 @@ public class GameManager : MonoBehaviour
             Debug.Log("player ship current counter: " + playerShip.GetCounter());
             for (int i = 0; i < aiShips.Length; i++)
             {
-                // REDUCE THE CALLS TO GETCOUNTER(), ALREADY A TAXING SOLUTION HERE
+                // MAYBE MOVE ALL GETCOUNTER() TO OUTSIDE THESE IF STATEMENTS
                 if (aiShips[i].GetAIType() == AIType.Advanced)
                 {
+                    float aiCounter = aiShips[i].GetCounter();
+
                     // get the checkpoint (counter value) 4 in front of players checkpoint
                     float targetPos = playerShip.GetCounter() + 400.0f; // MAGIC
                     Debug.Log(targetPos + " advanced AI target.");
 
                     // if they are at that value (range) then keep steady
-                    if (aiShips[i].GetCounter() > targetPos - 100.0f && aiShips[i].GetCounter() < targetPos + 100.0f) // MAGIC
+                    if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm just right!");
+                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
                     }
                     // if they are behind that value then gradually increase their skills
-                    else if (aiShips[i].GetCounter() < targetPos - 100.0f) // MAGIC
+                    else if (aiCounter < targetPos - 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I gotta increase my skill!");
+                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
                     }
                     // if they are in front of that value then gradually reduce their skills
-                    else if (aiShips[i].GetCounter() > targetPos + 100.0f) // MAGIC
+                    else if (aiCounter > targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm too good, gotta decrease skill.");
+                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = false;
                     }
 
                 }
                 else if (aiShips[i].GetAIType() == AIType.Middle)
                 {
+                    float aiCounter = aiShips[i].GetCounter();
+
                     // get the checkpoint (counter value) 2 in front of the players checkpoint
                     float targetPos = playerShip.GetCounter() + 200.0f; // MAGIC
                     Debug.Log(targetPos + " middle AI target.");
 
                     // if they are at that value (range) then keep steady
-                    if (aiShips[i].GetCounter() > targetPos - 100.0f && aiShips[i].GetCounter() < targetPos + 100.0f) // MAGIC
+                    if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm just right!");
+                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
                     }
                     // if they are behind that value then gradually increase their skills
-                    else if (aiShips[i].GetCounter() < targetPos - 100.0f) // MAGIC
+                    else if (aiCounter < targetPos - 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I gotta increase my skill!");
+                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
                     }
                     // if they are in front of that value then gradually reduce their skills
-                    else if (aiShips[i].GetCounter() > targetPos + 100.0f) // MAGIC
+                    else if (aiCounter > targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm too good, gotta decrease skill.");
+                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = false;
                     }
                 }
                 else if (aiShips[i].GetAIType() == AIType.Back)
                 {
+                    float aiCounter = aiShips[i].GetCounter();
+
                     // get the checkpoint (counter value) 4 BEHIND the players checkpoint
                     float targetPos = playerShip.GetCounter() - 400.0f; // MAGIC
                     Debug.Log(targetPos + " back AI target.");
 
                     // if they are at that value (range) then keep steady
-                    if (aiShips[i].GetCounter() > targetPos - 100.0f && aiShips[i].GetCounter() < targetPos + 100.0f) // MAGIC
+                    if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm just right!");
+                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
                     }
                     // if they are behind that value then gradually increase their skills
-                    else if (aiShips[i].GetCounter() < targetPos - 100.0f) // MAGIC
+                    else if (aiCounter < targetPos - 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I gotta increase my skill!");
+                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
                     }
                     // if they are in front of that value then gradually reduce their skills
-                    else if (aiShips[i].GetCounter() > targetPos + 100.0f) // MAGIC
+                    else if (aiCounter > targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm too good, gotta decrease skill.");
+                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = false;
                     }
                 }
                 else if (aiShips[i].GetAIType() == AIType.Close)
                 {
+                    float aiCounter = aiShips[i].GetCounter();
+
                     // get the checkpoint (counter value) of the players checkpoint
                     float targetPos = playerShip.GetCounter();
                     Debug.Log(targetPos + " close AI target.");
 
                     // if they are at that value (range) then keep steady
-                    if (aiShips[i].GetCounter() > targetPos - 100.0f && aiShips[i].GetCounter() < targetPos + 100.0f) // MAGIC
+                    if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm just right!");
+                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
                     }
                     // if they are behind that value then gradually increase their skills
-                    else if (aiShips[i].GetCounter() < targetPos - 100.0f) // MAGIC
+                    else if (aiCounter < targetPos - 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I gotta increase my skill!");
+                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
                     }
                     // if they are in front of that value then gradually reduce their skills
-                    else if (aiShips[i].GetCounter() > targetPos + 100.0f) // MAGIC
+                    else if (aiCounter > targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm too good, gotta decrease skill.");
+                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = false;
                     }
                 }
             }

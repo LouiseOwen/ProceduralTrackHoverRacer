@@ -24,7 +24,7 @@ public class PlayerInput : MonoBehaviour
     private float m_RandomPerlin; // A random value for the car to base its wander on (so that AI cars don't all wander in the same pattern)
     private Rigidbody m_Rigidbody; // to get speed values etc.
     [SerializeField] private Transform m_Target; // 'target' the target object to aim for.
-    [SerializeField] private bool m_Driving = true; // whether the AI is currently actively driving or stopped.
+    [SerializeField] public bool m_Driving = true; // whether the AI is currently actively driving or stopped.
     [SerializeField] private float m_CautiousAngularVelocityFactor = 100f; // how cautious the AI should be when considering its own current angular velocity (i.e. easing off acceleration if spinning!)
     [SerializeField] [Range(0, 180)] private float m_CautiousMaxAngle = 90f; // angle of approaching corner to treat as warranting maximum caution
     [SerializeField] [Range(0, 1)] private float m_CautiousSpeedFactor = 0.6f; // percentage of max speed to use when being maximally cautious
