@@ -24,7 +24,7 @@ public class PlayerInput : MonoBehaviour
     private float m_RandomPerlin; // A random value for the car to base its wander on (so that AI cars don't all wander in the same pattern)
     private Rigidbody m_Rigidbody; // to get speed values etc.
     [SerializeField] private Transform m_Target; // 'target' the target object to aim for.
-    [SerializeField] public bool m_Driving = true; // whether the AI is currently actively driving or stopped.
+    [SerializeField] private bool m_Driving = true; // whether the AI is currently actively driving or stopped.
     [SerializeField] private float m_CautiousAngularVelocityFactor = 100f; // how cautious the AI should be when considering its own current angular velocity (i.e. easing off acceleration if spinning!)
     [SerializeField] [Range(0, 180)] private float m_CautiousMaxAngle = 90f; // angle of approaching corner to treat as warranting maximum caution
     [SerializeField] [Range(0, 1)] private float m_CautiousSpeedFactor = 0.6f; // percentage of max speed to use when being maximally cautious
@@ -98,9 +98,9 @@ public class PlayerInput : MonoBehaviour
                     offsetTargetPos += m_Target.right * (Mathf.PerlinNoise(Time.time * m_LateralWanderSpeed, m_RandomPerlin) * 2 - 1) * m_LateralWanderDistance; // adding sideways wander to path
                 }
 
-                //float accelBrakeSensitivity = (desiredSpeed < m_Vehicle.speed) ? m_BrakeSensitivity : m_AccelSensitivity;
+                float accelBrakeSensitivity = (desiredSpeed < m_Vehicle.speed) ? m_BrakeSensitivity : m_AccelSensitivity;
 
-                float accel = Mathf.Clamp((desiredSpeed - m_Vehicle.speed) * m_AccelSensitivity, -1, 1);
+                float accel = Mathf.Clamp((desiredSpeed - m_Vehicle.speed) * accelBrakeSensitivity, -1, 1);
 
                 accel *= (1 - m_AccelWanderAmount) + (Mathf.PerlinNoise(Time.time * m_AccelWanderSpeed, m_RandomPerlin) * m_AccelWanderAmount);
 
@@ -115,7 +115,7 @@ public class PlayerInput : MonoBehaviour
                 {
                     thruster = 0.0f;
                     isBraking = true;
-                    Debug.Log("I braked");
+                    //Debug.Log("I braked");
                 }
                 else
                 {
@@ -144,7 +144,7 @@ public class PlayerInput : MonoBehaviour
         if (isHuman)
         {
             //Get the values of the thruster, rudder, and brake from the input class
-            thruster = Input.GetAxis(verticalAxisName);
+            thruster = Mathf.Clamp(Input.GetAxis(verticalAxisName), -0.6f, 0.6f); // MAGIC
             rudder = Input.GetAxis(horizontalAxisName);
             isBraking = Input.GetButton(brakingKey);
         }
@@ -171,12 +171,12 @@ public class PlayerInput : MonoBehaviour
                 if (Vector3.Angle(transform.forward, otherCar.transform.position - transform.position) < 90)
                 {
                     // the other ai is in front, so it is only good manners that we ought to brake...
-                    m_AvoidOtherCarSlowdown = 0.5f;
+                    m_AvoidOtherCarSlowdown = 0.75f;
                 }
                 else
                 {
                     // we're in front! ain't slowing down for anybody...
-                    m_AvoidOtherCarSlowdown = 1;
+                    m_AvoidOtherCarSlowdown = 1f;
                 }
 
                 // both cars should take evasive action by driving along an offset from the path centre,
@@ -192,5 +192,29 @@ public class PlayerInput : MonoBehaviour
     {
         m_Target = target;
         m_Driving = true;
+    }
+
+    public void BestSkill()
+    {
+        m_CautiousSpeedFactor = 0.6f; // MAGIC
+        m_BrakeSensitivity = 0.5f;
+        m_AccelSensitivity = 1.0f;
+        m_SteerSensitivity = 0.7f;
+    }
+
+    public void MidSkill()
+    {
+        m_CautiousSpeedFactor = 0.5f; // MAGIC
+        m_BrakeSensitivity = 0.75f;
+        m_AccelSensitivity = 0.75f;
+        m_SteerSensitivity = 0.5f;
+    }
+
+    public void WorstSkill()
+    {
+        m_CautiousSpeedFactor = 0.4f; // MAGIC
+        m_BrakeSensitivity = 1.0f;
+        m_AccelSensitivity = 0.5f;
+        m_SteerSensitivity = 0.3f;
     }
 }

@@ -205,7 +205,7 @@ public class GameManager : MonoBehaviour
 
 
             // DYNAMIC DIFFICULTY ADJUST HERE!!!
-            Debug.Log("player ship current counter: " + playerShip.GetCounter());
+            //Debug.Log("player ship current counter: " + playerShip.GetCounter());
             for (int i = 0; i < aiShips.Length; i++)
             {
                 // MAYBE MOVE ALL GETCOUNTER() TO OUTSIDE THESE IF STATEMENTS
@@ -215,25 +215,25 @@ public class GameManager : MonoBehaviour
 
                     // get the checkpoint (counter value) 4 in front of players checkpoint
                     float targetPos = playerShip.GetCounter() + 400.0f; // MAGIC
-                    Debug.Log(targetPos + " advanced AI target.");
+                    //Debug.Log(targetPos + " advanced AI target.");
 
                     // if they are at that value (range) then keep steady
                     if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm just right!");
-                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
+                        aiVehicles[i].GetComponent<PlayerInput>().MidSkill();
                     }
                     // if they are behind that value then gradually increase their skills
                     else if (aiCounter < targetPos - 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I gotta increase my skill!");
-                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
+                        aiVehicles[i].GetComponent<PlayerInput>().BestSkill();
                     }
                     // if they are in front of that value then gradually reduce their skills
                     else if (aiCounter > targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm too good, gotta decrease skill.");
-                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = false;
+                        aiVehicles[i].GetComponent<PlayerInput>().WorstSkill();
                     }
 
                 }
@@ -243,25 +243,25 @@ public class GameManager : MonoBehaviour
 
                     // get the checkpoint (counter value) 2 in front of the players checkpoint
                     float targetPos = playerShip.GetCounter() + 200.0f; // MAGIC
-                    Debug.Log(targetPos + " middle AI target.");
+                    //Debug.Log(targetPos + " middle AI target.");
 
                     // if they are at that value (range) then keep steady
                     if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm just right!");
-                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
+                        aiVehicles[i].GetComponent<PlayerInput>().MidSkill();
                     }
                     // if they are behind that value then gradually increase their skills
                     else if (aiCounter < targetPos - 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I gotta increase my skill!");
-                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
+                        aiVehicles[i].GetComponent<PlayerInput>().BestSkill();
                     }
                     // if they are in front of that value then gradually reduce their skills
                     else if (aiCounter > targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm too good, gotta decrease skill.");
-                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = false;
+                        aiVehicles[i].GetComponent<PlayerInput>().WorstSkill();
                     }
                 }
                 else if (aiShips[i].GetAIType() == AIType.Back)
@@ -270,25 +270,25 @@ public class GameManager : MonoBehaviour
 
                     // get the checkpoint (counter value) 4 BEHIND the players checkpoint
                     float targetPos = playerShip.GetCounter() - 400.0f; // MAGIC
-                    Debug.Log(targetPos + " back AI target.");
+                    //Debug.Log(targetPos + " back AI target.");
 
                     // if they are at that value (range) then keep steady
                     if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm just right!");
-                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
+                        aiVehicles[i].GetComponent<PlayerInput>().MidSkill();
                     }
                     // if they are behind that value then gradually increase their skills
                     else if (aiCounter < targetPos - 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I gotta increase my skill!");
-                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
+                        aiVehicles[i].GetComponent<PlayerInput>().BestSkill();
                     }
                     // if they are in front of that value then gradually reduce their skills
                     else if (aiCounter > targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm too good, gotta decrease skill.");
-                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = false;
+                        aiVehicles[i].GetComponent<PlayerInput>().WorstSkill();
                     }
                 }
                 else if (aiShips[i].GetAIType() == AIType.Close)
@@ -297,25 +297,25 @@ public class GameManager : MonoBehaviour
 
                     // get the checkpoint (counter value) of the players checkpoint
                     float targetPos = playerShip.GetCounter();
-                    Debug.Log(targetPos + " close AI target.");
+                    //Debug.Log(targetPos + " close AI target.");
 
                     // if they are at that value (range) then keep steady
                     if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm just right!");
-                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
+                        aiVehicles[i].GetComponent<PlayerInput>().MidSkill();
                     }
                     // if they are behind that value then gradually increase their skills
                     else if (aiCounter < targetPos - 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I gotta increase my skill!");
-                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = true;
+                        aiVehicles[i].GetComponent<PlayerInput>().BestSkill();
                     }
                     // if they are in front of that value then gradually reduce their skills
                     else if (aiCounter > targetPos + 100.0f) // MAGIC
                     {
                         Debug.Log(aiShips[i].GetAINumber() + " I'm too good, gotta decrease skill.");
-                        aiVehicles[i].GetComponent<PlayerInput>().m_Driving = false;
+                        aiVehicles[i].GetComponent<PlayerInput>().WorstSkill();
                     }
                 }
             }
@@ -371,7 +371,7 @@ public class GameManager : MonoBehaviour
 
         if (aiShips[aiNum].GetCurrLap() >= numberOfLaps)
         {
-            Debug.Log("AI " + aiNum + " HAS FINISHED RACE");
+            //Debug.Log("AI " + aiNum + " HAS FINISHED RACE");
             // it's ai? probs just keep going
         }
     }
@@ -379,13 +379,13 @@ public class GameManager : MonoBehaviour
     public void PlayerPassedWaypoint(int waypoint)
     {
         playerShip.SetCurrWaypoint(waypoint);
-        Debug.Log("player passed waypoint: " + waypoint);
+        //Debug.Log("player passed waypoint: " + waypoint);
     }
 
     public void AIPassedWaypoint(int aiNum, int waypoint)
     {
         aiShips[aiNum].SetCurrWaypoint(waypoint);
-        Debug.Log("AI: " + aiNum + " has passed: " + waypoint);
+        //Debug.Log("AI: " + aiNum + " has passed: " + waypoint);
     }
 
 	void UpdateUI_LapTime()
