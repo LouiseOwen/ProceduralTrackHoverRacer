@@ -216,107 +216,23 @@ public class GameManager : MonoBehaviour
 
 
             // DYNAMIC DIFFICULTY ADJUST HERE!!!
-            // TURN INTO A FUNCTION TO DO IN THE LOOP - PASS IN TARGET POS VALUE AND AISHIPS[I]
             for (int i = 0; i < aiShips.Length; i++)
             {
-                float aiCounter = aiShips[i].GetCounter();
-
                 if (aiShips[i].GetAIType() == AIType.Advanced)
                 {
-                    // get the checkpoint (counter value) 4 in front of players checkpoint
-                    float targetPos = playerShip.GetCounter() + 400.0f; // MAGIC
-
-                    // if they are at that value (range) then keep steady
-                    if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC
-                    {
-                        Debug.Log(aiShips[i].GetAINumber() + " I'm just right!");
-                        aiShips[i].SetAIMidSkill();
-                    }
-                    // if they are behind that value then gradually increase their skills
-                    else if (aiCounter < targetPos - 100.0f) // MAGIC
-                    {
-                        Debug.Log(aiShips[i].GetAINumber() + " I gotta increase my skill!");
-                        aiShips[i].SetAIBestSkill();
-                    }
-                    // if they are in front of that value then gradually reduce their skills
-                    else if (aiCounter > targetPos + 100.0f) // MAGIC
-                    {
-                        Debug.Log(aiShips[i].GetAINumber() + " I'm too good, gotta decrease skill.");
-                        aiShips[i].SetAIWorstSkill();
-                    }
-
+                    UpdateSkillRequirements(ref aiShips[i], 400.0f); //MAGIC
                 }
                 else if (aiShips[i].GetAIType() == AIType.Middle)
                 {
-                    // get the checkpoint (counter value) 2 in front of the players checkpoint
-                    float targetPos = playerShip.GetCounter() + 200.0f; // MAGIC
-
-                    // if they are at that value (range) then keep steady
-                    if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC
-                    {
-                        Debug.Log(aiShips[i].GetAINumber() + " I'm just right!");
-                        aiShips[i].SetAIMidSkill();
-                    }
-                    // if they are behind that value then gradually increase their skills
-                    else if (aiCounter < targetPos - 100.0f) // MAGIC
-                    {
-                        Debug.Log(aiShips[i].GetAINumber() + " I gotta increase my skill!");
-                        aiShips[i].SetAIBestSkill();
-                    }
-                    // if they are in front of that value then gradually reduce their skills
-                    else if (aiCounter > targetPos + 100.0f) // MAGIC
-                    {
-                        Debug.Log(aiShips[i].GetAINumber() + " I'm too good, gotta decrease skill.");
-                        aiShips[i].SetAIWorstSkill();
-                    }
+                    UpdateSkillRequirements(ref aiShips[i], 200.0f);
                 }
                 else if (aiShips[i].GetAIType() == AIType.Back)
                 {
-                    // get the checkpoint (counter value) 4 BEHIND the players checkpoint
-                    float targetPos = playerShip.GetCounter() - 400.0f; // MAGIC
-
-                    // if they are at that value (range) then keep steady
-                    if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC
-                    {
-                        Debug.Log(aiShips[i].GetAINumber() + " I'm just right!");
-                        aiShips[i].SetAIMidSkill();
-                    }
-                    // if they are behind that value then gradually increase their skills
-                    else if (aiCounter < targetPos - 100.0f) // MAGIC
-                    {
-                        Debug.Log(aiShips[i].GetAINumber() + " I gotta increase my skill!");
-                        aiShips[i].SetAIBestSkill();
-                    }
-                    // if they are in front of that value then gradually reduce their skills
-                    else if (aiCounter > targetPos + 100.0f) // MAGIC
-                    {
-                        Debug.Log(aiShips[i].GetAINumber() + " I'm too good, gotta decrease skill.");
-                        aiShips[i].SetAIWorstSkill();
-                    }
+                    UpdateSkillRequirements(ref aiShips[i], -400.0f);
                 }
                 else if (aiShips[i].GetAIType() == AIType.Close)
                 {
-                    // get the checkpoint (counter value) of the players checkpoint
-                    float targetPos = playerShip.GetCounter();
-
-                    // if they are at that value (range) then keep steady
-                    if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC
-                    {
-                        Debug.Log(aiShips[i].GetAINumber() + " I'm just right!");
-                        aiShips[i].SetAIMidSkill();
-                    }
-                    // if they are behind that value then gradually increase their skills
-                    else if (aiCounter < targetPos - 100.0f) // MAGIC
-                    {
-                        Debug.Log(aiShips[i].GetAINumber() + " I gotta increase my skill!");
-                        aiShips[i].SetAIBestSkill();
-                    }
-                    // if they are in front of that value then gradually reduce their skills
-                    else if (aiCounter > targetPos + 100.0f) // MAGIC
-                    {
-                        Debug.Log(aiShips[i].GetAINumber() + " I'm too good, gotta decrease skill.");
-                        aiShips[i].SetAIWorstSkill();
-                    }
+                    UpdateSkillRequirements(ref aiShips[i], 0.0f);
                 }
             }
 
@@ -357,8 +273,34 @@ public class GameManager : MonoBehaviour
         racePositions.Sort(delegate (Ship s1, Ship s2) { return s2.GetCounter().CompareTo(s1.GetCounter()); });
     }
 
-	//Called by the FinishLine script
-	public void PlayerCompletedLap()
+    public void UpdateSkillRequirements(ref Ship aiShip, float targetOffset)
+    {
+        float aiCounter = aiShip.GetCounter(); // PULL MULTIPLE CALLS TO AISHIP OUT
+
+        float targetPos = playerShip.GetCounter() + targetOffset; // MAGIC PULL MULTIPLE CALLS TO PLAYERSHIP OUT
+
+        // if they are at that value (range) then keep steady
+        if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC
+        {
+            Debug.Log(aiShip.GetAINumber() + " I'm just right!");
+            aiShip.SetAIMidSkill();
+        }
+        // if they are behind that value then gradually increase their skills
+        else if (aiCounter < targetPos - 100.0f) // MAGIC
+        {
+            Debug.Log(aiShip.GetAINumber() + " I gotta increase my skill!");
+            aiShip.SetAIBestSkill();
+        }
+        // if they are in front of that value then gradually reduce their skills
+        else if (aiCounter > targetPos + 100.0f) // MAGIC
+        {
+            Debug.Log(aiShip.GetAINumber() + " I'm too good, gotta decrease skill.");
+            aiShip.SetAIWorstSkill();
+        }
+    }
+
+    //Called by the FinishLine script
+    public void PlayerCompletedLap()
 	{
 		//If the game is already over exit this method 
 		if (isGameOver)
