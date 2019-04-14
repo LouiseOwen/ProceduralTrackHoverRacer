@@ -180,22 +180,22 @@ public class GameManager : MonoBehaviour
         playerShip.SetCurrPos(playerShipObj.transform.position);
 
         //Initialise AI
-        Vector3[] positions = new Vector3[8];
-        positions[0] = new Vector3(0.0f, 0.0f, 8.0f);
-        positions[1] = new Vector3(0.0f, 0.0f, 4.0f);
-        positions[2] = new Vector3(0.0f, 0.0f, -4.0f);
-        positions[3] = new Vector3(0.0f, 0.0f, -8.0f);
-        positions[4] = new Vector3(-10.0f, 0.0f, 8.0f);
-        positions[5] = new Vector3(-10.0f, 0.0f, 4.0f);
-        positions[6] = new Vector3(-10.0f, 0.0f, 0.0f);
-        positions[7] = new Vector3(-10.0f, 0.0f, -4.0f);
-        // PUT PLAYER SHIP BACK LEFT OF STARTING POSITIONS AND FIND POSITION STEP BETWEEN VEHICLES THEN WRITE BIG ARRAY (THINK OF A MAX)
-
+        Vector3[] positions = new Vector3[8]; // MAGIC
+        positions[0] = new Vector3(0.0f, 0.0f, 10.0f);
+        positions[1] = new Vector3(0.0f, 0.0f, 5.0f);
+        // PLAYER CAR HERE
+        positions[2] = new Vector3(0.0f, 0.0f, -5.0f);
+        positions[3] = new Vector3(-7.5f, 0.0f, 12.5f);
+        positions[4] = new Vector3(-7.5f, 0.0f, 7.5f);
+        positions[5] = new Vector3(-7.5f, 0.0f, 2.5f);
+        positions[6] = new Vector3(-7.5f, 0.0f, -2.5f);
+        positions[7] = new Vector3(-7.5f, 0.0f, -7.5f);
 
         aiShips = new Ship[aiVehicles.Length];
         for (int i = 0; i < aiShips.Length; i++)
         {
-            aiVehicles[i].transform.position = playerShipObj.transform.position + positions[i]; // ADD POSITIONING ARRAY DATA HERE
+            aiVehicles[i].transform.rotation = playerShipObj.transform.rotation;
+            aiVehicles[i].transform.position = playerShipObj.transform.position + positions[i];
             aiShips[i] = new Ship(i, (AIType)(i % 4), 0, 0, aiVehicles[i].transform.position, aiVehicles[i]); // MAGIC
         }
         for (int i = 0; i < aiShips.Length; i++)

@@ -86,7 +86,7 @@ public class RoadMaker : MonoBehaviour
         Vector3 current = points[0];
         for (int i = 1; i < points.Count; i++)
         {
-            if (Vector3.Angle(current, points[i]) > 22.5f)
+            if (Vector3.Angle(current, points[i]) > 22.5f) // MAGIC
             {
                 Vector3 forward = (points[i + 1] - points[i]).normalized;
                 Quaternion lookRot = Quaternion.LookRotation(forward);
