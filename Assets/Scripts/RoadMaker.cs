@@ -8,7 +8,6 @@ using UnityEngine.AI;
 [RequireComponent(typeof(MeshCollider))]
 public class RoadMaker : MonoBehaviour
 {
-
     public float radius = 90.0f; // can be pretty much anything, just says how big the circle is N.B. bigger radius smooths waviness (probably cap this variable)
     private float segments = 300.0f; // number of extrusions, helps calculate number of points in track by determining degrees between each point (300 appears to be best number, may as well make consistent)
 

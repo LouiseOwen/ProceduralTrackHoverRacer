@@ -179,22 +179,32 @@ public class GameManager : MonoBehaviour
         //Initialise Player
         playerShip.SetCurrPos(playerShipObj.transform.position);
 
-        //Initialise AI stuff
+        //Initialise AI
+        Vector3[] positions = new Vector3[8];
+        positions[0] = new Vector3(0.0f, 0.0f, 8.0f);
+        positions[1] = new Vector3(0.0f, 0.0f, 4.0f);
+        positions[2] = new Vector3(0.0f, 0.0f, -4.0f);
+        positions[3] = new Vector3(0.0f, 0.0f, -8.0f);
+        positions[4] = new Vector3(-10.0f, 0.0f, 8.0f);
+        positions[5] = new Vector3(-10.0f, 0.0f, 4.0f);
+        positions[6] = new Vector3(-10.0f, 0.0f, 0.0f);
+        positions[7] = new Vector3(-10.0f, 0.0f, -4.0f);
+        // PUT PLAYER SHIP BACK LEFT OF STARTING POSITIONS AND FIND POSITION STEP BETWEEN VEHICLES THEN WRITE BIG ARRAY (THINK OF A MAX)
+
+
         aiShips = new Ship[aiVehicles.Length];
         for (int i = 0; i < aiShips.Length; i++)
         {
-            aiShips[i] = new Ship(i, AIType.Not, 0, 0, aiVehicles[i].transform.position, aiVehicles[i]);
+            aiVehicles[i].transform.position = playerShipObj.transform.position + positions[i]; // ADD POSITIONING ARRAY DATA HERE
+            aiShips[i] = new Ship(i, (AIType)(i % 4), 0, 0, aiVehicles[i].transform.position, aiVehicles[i]); // MAGIC
         }
-        // FIND WAY TO SORT THIS OUT? - or just hardcode it
-        aiShips[0].SetAIType(AIType.Advanced);
-        aiShips[1].SetAIType(AIType.Middle);
-        aiShips[2].SetAIType(AIType.Back);
-        aiShips[3].SetAIType(AIType.Close);
+        for (int i = 0; i < aiShips.Length; i++)
+        {
+            Debug.Log(aiShips[i].GetAINumber() + " has type " + aiShips[i].GetAIType().ToString());
+        }
 
+        //Initialise Race Ranking
         racePositions = new List<Ship>(aiVehicles.Length + 1); // + 1 for player car
-
-
-
 
         //Initialise Waypoints
         waypoints = new Vector3[waypointsObj.transform.childCount];
@@ -214,29 +224,30 @@ public class GameManager : MonoBehaviour
 		{
             UpdateRacePositions();
 
-
-            // DYNAMIC DIFFICULTY ADJUST HERE!!!
+            // Dynamic Difficulty Adjust
+            float playerShipCounter = playerShip.GetCounter(); // so that we know where the player ship is
             for (int i = 0; i < aiShips.Length; i++)
             {
+                float aiShipCounter = aiShips[i].GetCounter(); // so that we know where the ai ship is
+
+                // based on what ai type it is (and what position it is in relative to player) update the ai skill
                 if (aiShips[i].GetAIType() == AIType.Advanced)
                 {
-                    UpdateSkillRequirements(ref aiShips[i], 400.0f); //MAGIC
+                    UpdateSkillRequirements(playerShipCounter, 400.0f, aiShipCounter, ref aiShips[i]); // MAGIC
                 }
                 else if (aiShips[i].GetAIType() == AIType.Middle)
                 {
-                    UpdateSkillRequirements(ref aiShips[i], 200.0f);
+                    UpdateSkillRequirements(playerShipCounter, 200.0f, aiShipCounter, ref aiShips[i]); // MAGIC
                 }
                 else if (aiShips[i].GetAIType() == AIType.Back)
                 {
-                    UpdateSkillRequirements(ref aiShips[i], -400.0f);
+                    UpdateSkillRequirements(playerShipCounter, -400.0f, aiShipCounter, ref aiShips[i]); // MAGIC
                 }
                 else if (aiShips[i].GetAIType() == AIType.Close)
                 {
-                    UpdateSkillRequirements(ref aiShips[i], 0.0f);
+                    UpdateSkillRequirements(playerShipCounter, 0.0f, aiShipCounter, ref aiShips[i]); // MAGIC
                 }
             }
-
-
 
             //...calculate the time for the lap and update the UI MAKE THIS WORK AGAIN
             lapTimes[playerShip.GetCurrLap()] += Time.deltaTime;
@@ -273,11 +284,9 @@ public class GameManager : MonoBehaviour
         racePositions.Sort(delegate (Ship s1, Ship s2) { return s2.GetCounter().CompareTo(s1.GetCounter()); });
     }
 
-    public void UpdateSkillRequirements(ref Ship aiShip, float targetOffset)
+    public void UpdateSkillRequirements(float playerCounter, float targetOffset, float aiCounter, ref Ship aiShip)
     {
-        float aiCounter = aiShip.GetCounter(); // PULL MULTIPLE CALLS TO AISHIP OUT
-
-        float targetPos = playerShip.GetCounter() + targetOffset; // MAGIC PULL MULTIPLE CALLS TO PLAYERSHIP OUT
+        float targetPos = playerCounter + targetOffset; // calculate the target position of the ai ship
 
         // if they are at that value (range) then keep steady
         if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC
