@@ -116,10 +116,19 @@ public class GameManager : MonoBehaviour
 	//The game manager holds a public static reference to itself. This is often referred to
 	//as being a "singleton" and allows it to be access from all other objects in the scene.
 	//This should be used carefully and is generally reserved for "manager" type objects
-	public static GameManager instance;		
+	public static GameManager instance;
+
+    const int NUM_AI_TYPES = 4;
+    const float WAYPOINT_MULTIPLIER = 100.0f;
+    const float LAP_MULTIPLIER = 1000.0f;
+    const float AI_CUTOFF_PERCENT = 0.8f;
+    const float DYNAMIC_DIFF_BEGIN = 5.0f;
+    const float ADV_AI_TARGET_OFFSET = 400.0f;
+    const float MID_AI_TAREGT_OFFSET = 200.0f;
+    const float BACK_AI_TARGET_OFFSET = -400.0f;
 
 	[Header("Race Settings")]
-	public int numberOfLaps = 3;			//The number of laps to complete
+	public int numberOfLaps = 3;			//The number of laps to complete MAGIC OR SET BY PLAYER BEFORE RACE?
 	public VehicleMovement vehicleMovement;	//A reference to the ship's VehicleMovement script
 
 	[Header("UI References")]
@@ -134,20 +143,17 @@ public class GameManager : MonoBehaviour
     Ship playerShip = new Ship(999, AIType.Not, 0, 0, Vector3.zero); // to store player ship details
     
     // AI
-    [SerializeField] GameObject[] aiVehicles; // needed for correct count and reference to the car's attributes
-    Ship[] aiShips; // could probably just merge this into the aiVehicles array but easier like this for now
+    [SerializeField] GameObject[] aiVehicles; // needed for correct count and reference to the car's attributes i.e. the gameobjects themselves
+    Ship[] aiShips; // race data about the ai
 
     // Race management
-    [SerializeField] GameObject waypointsObj; // to find the exact position of a waypoint
+    [SerializeField] GameObject waypointsObj; // to find the exact position of a waypoint (the parent object of the waypoints)
     Vector3[] waypoints;
-    List<Ship> racePositions; // ordered list of car positions in race
-
-
-
-    float timer = 0.0f; // to count to when ai should react at start of race (after 10 seconds)
-    float oneLapCountVal;
-    float entireRaceCountVal;
-
+    List<Ship> racePositions; // ordered list of car rankings in race
+    float timer = 0.0f; // to count to when ai should start reacting at start of race (after a few seconds)
+    float oneLapCountVal; // the counter value of one lap (used as bonus addition to rectify counter bug and to calculate entireRaceCountVal)
+    float entireRaceCountVal; // the counter value of the entire race - not sure we actually need it as it's own variable as it's not used anywhere else
+    float aiCutOffCountVal; // counter value where once ai has passed it will reduce skill to give player chance (80% of race)
 
 
 	void Awake()
@@ -187,10 +193,10 @@ public class GameManager : MonoBehaviour
         playerShip.SetCurrPos(playerShipObj.transform.position);
 
         //Initialise AI
-        Vector3[] positions = new Vector3[8]; // MAGIC
+        Vector3[] positions = new Vector3[8]; // MAGIC - although technically a const array of offsets?
         positions[0] = new Vector3(0.0f, 0.0f, 10.0f);
         positions[1] = new Vector3(0.0f, 0.0f, 5.0f);
-        // PLAYER CAR HERE
+        // player car here (0.0f, 0.0f, 0.0f)
         positions[2] = new Vector3(0.0f, 0.0f, -5.0f);
         positions[3] = new Vector3(-7.5f, 0.0f, 12.5f);
         positions[4] = new Vector3(-7.5f, 0.0f, 7.5f);
@@ -203,7 +209,8 @@ public class GameManager : MonoBehaviour
         {
             aiVehicles[i].transform.rotation = playerShipObj.transform.rotation;
             aiVehicles[i].transform.position = playerShipObj.transform.position + positions[i];
-            aiShips[i] = new Ship(i, (AIType)(i % 4), 0, 0, aiVehicles[i].transform.position, aiVehicles[i]); // MAGIC
+            aiShips[i] = new Ship(i, (AIType)(i % NUM_AI_TYPES), 0, 0, aiVehicles[i].transform.position, aiVehicles[i]);
+            aiShips[i].SetAIBestSkill(); // check if race has been going for number of seconds before activating dynamic difficulty
         }
         for (int i = 0; i < aiShips.Length; i++)
         {
@@ -220,13 +227,11 @@ public class GameManager : MonoBehaviour
             waypoints[i] = waypointsObj.transform.GetChild(i).transform.position;
         }
 
-
-
-        // NEW STUFF
-        oneLapCountVal = waypoints.Length * 100.0f; // MAGIC
-        entireRaceCountVal = (oneLapCountVal * numberOfLaps) + ((numberOfLaps - 1) * 1000.0f); // MAGIC
-        Debug.Log(entireRaceCountVal); // CORRECT!!! NOW NEED TO FIND POINT AT WHICH TO CUT OFF SKILL ADAPT TO GIVE PLAYER CHANCE AT END
-
+        //Calculate race counter values
+        oneLapCountVal = waypoints.Length * WAYPOINT_MULTIPLIER;
+        entireRaceCountVal = (oneLapCountVal * numberOfLaps) + ((numberOfLaps - 1) * LAP_MULTIPLIER); // - 1 because 1st lap does not require bonus
+        //Debug.Log(entireRaceCountVal);
+        aiCutOffCountVal = entireRaceCountVal * AI_CUTOFF_PERCENT;
 
 	}
 
@@ -249,14 +254,7 @@ public class GameManager : MonoBehaviour
             //}
 
             timer += Time.deltaTime;
-            if (timer < 5.0f) // simplify by setting best skill at initialise and then check if timer is over 10 to start rubber band
-            {
-                for (int i = 0; i < aiShips.Length; i++)
-                {
-                    aiShips[i].SetAIBestSkill();
-                }
-            }
-            else
+            if (timer > DYNAMIC_DIFF_BEGIN)
             {
                 // Dynamic Difficulty Adjust
                 float playerShipCounter = playerShip.GetCounter(); // so that we know where the player ship is
@@ -267,19 +265,19 @@ public class GameManager : MonoBehaviour
                     // based on what ai type it is (and what position it is in relative to player) update the ai skill
                     if (aiShips[i].GetAIType() == AIType.Advanced)
                     {
-                        UpdateSkillRequirements(playerShipCounter, 400.0f, aiShipCounter, ref aiShips[i]); // MAGIC
+                        UpdateSkillRequirements(playerShipCounter, ADV_AI_TARGET_OFFSET, aiShipCounter, ref aiShips[i]);
                     }
                     else if (aiShips[i].GetAIType() == AIType.Middle)
                     {
-                        UpdateSkillRequirements(playerShipCounter, 200.0f, aiShipCounter, ref aiShips[i]); // MAGIC
+                        UpdateSkillRequirements(playerShipCounter, MID_AI_TAREGT_OFFSET, aiShipCounter, ref aiShips[i]);
                     }
                     else if (aiShips[i].GetAIType() == AIType.Back)
                     {
-                        UpdateSkillRequirements(playerShipCounter, -400.0f, aiShipCounter, ref aiShips[i]); // MAGIC
+                        UpdateSkillRequirements(playerShipCounter, BACK_AI_TARGET_OFFSET, aiShipCounter, ref aiShips[i]);
                     }
                     else if (aiShips[i].GetAIType() == AIType.Close)
                     {
-                        UpdateSkillRequirements(playerShipCounter, 0.0f, aiShipCounter, ref aiShips[i]); // MAGIC
+                        UpdateSkillRequirements(playerShipCounter, 0.0f, aiShipCounter, ref aiShips[i]);
                     }
                 }
             }
@@ -314,7 +312,7 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < racePositions.Capacity; i++)
         {
             float distFromPrevWaypoint = GetFractionOfPathCovered(racePositions[i].GetCurrPos(), waypoints[racePositions[i].GetCurrWaypoint() % waypoints.Length], waypoints[(racePositions[i].GetCurrWaypoint() + 1) % waypoints.Length]);
-            racePositions[i].SetCounter(racePositions[i].GetCurrLap() * 1000.0f + racePositions[i].GetCurrWaypoint() * 100.0f + distFromPrevWaypoint + (1500.0f /* A LAP */ * racePositions[i].GetCurrLap())); // MAGIC
+            racePositions[i].SetCounter(racePositions[i].GetCurrLap() * LAP_MULTIPLIER + racePositions[i].GetCurrWaypoint() * WAYPOINT_MULTIPLIER + distFromPrevWaypoint + (oneLapCountVal * racePositions[i].GetCurrLap()));
         }
         racePositions.Sort(delegate (Ship s1, Ship s2) { return s2.GetCounter().CompareTo(s1.GetCounter()); });
     }
@@ -323,8 +321,25 @@ public class GameManager : MonoBehaviour
     {
         float targetPos = playerCounter + targetOffset; // calculate the target position of the ai ship
 
+        // if they are in the last section of the race
+        if (aiCounter >= aiCutOffCountVal)
+        {
+            if (aiShip.GetAIType() != AIType.Back) // stops back group increasing skill
+            {
+                if (aiCounter > playerCounter) // only if ai is ahead of the player
+                {
+                    Debug.Log("Turning off my dynamic difficulty to give player a chance!");
+                    aiShip.SetAIMidSkill();
+                }
+                else
+                {
+                    Debug.Log("Player is ahead, increasing skill to maximum!");
+                    aiShip.SetAIBestSkill();
+                }
+            }
+        }
         // if they are at that value (range) then keep steady
-        if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC
+        else if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC FIGURE OUT IF THESE 100.0f ARE NECESSARY - PLAY TESTING SEEMS TO SUGGEST YES
         {
             Debug.Log(aiShip.GetAINumber() + " I'm just right!");
             aiShip.SetAIMidSkill();

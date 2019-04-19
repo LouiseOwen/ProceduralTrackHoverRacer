@@ -93,7 +93,7 @@ public class RoadMaker : MonoBehaviour
                 GameObject newWaypoint = Instantiate(waypoint, points[i], lookRot, waypoints);
                 newWaypoint.name = "Waypoint " + waypoints.childCount.ToString("000");
                 Vector3 scale = newWaypoint.transform.localScale;
-                scale.x = roadWidth * 2.0f;
+                scale.x = roadWidth * 2;
                 newWaypoint.transform.localScale = scale;
                 current = points[i];
             }
