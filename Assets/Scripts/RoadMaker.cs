@@ -8,6 +8,8 @@ using UnityEngine.AI;
 [RequireComponent(typeof(MeshCollider))]
 public class RoadMaker : MonoBehaviour
 {
+    const float WAYPOINT_DIFF = 22.5f; // difference in angle to place next waypoint
+
     public float radius = 90.0f; // can be pretty much anything, just says how big the circle is N.B. bigger radius smooths waviness (probably cap this variable)
     private float segments = 300.0f; // number of extrusions, helps calculate number of points in track by determining degrees between each point (300 appears to be best number, may as well make consistent)
 
@@ -86,7 +88,7 @@ public class RoadMaker : MonoBehaviour
         Vector3 current = points[0];
         for (int i = 1; i < points.Count; i++)
         {
-            if (Vector3.Angle(current, points[i]) > 22.5f) // MAGIC
+            if (Vector3.Angle(current, points[i]) > WAYPOINT_DIFF)
             {
                 Vector3 forward = (points[i + 1] - points[i]).normalized;
                 Quaternion lookRot = Quaternion.LookRotation(forward);

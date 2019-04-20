@@ -7,6 +7,8 @@ using UnityEngine;
 // CAN PROBABLY SPLIT THIS INTO TWO CLASSES (Human and AI)
 public class PlayerInput : MonoBehaviour
 {
+    const float ACCEL_RESTRICT = 0.6f;
+
     public bool isHuman;
 
 	public string verticalAxisName = "Vertical";        //The name of the thruster axis
@@ -144,7 +146,7 @@ public class PlayerInput : MonoBehaviour
         if (isHuman)
         {
             //Get the values of the thruster, rudder, and brake from the input class
-            thruster = Mathf.Clamp(Input.GetAxis(verticalAxisName), -0.6f, 0.6f); // MAGIC
+            thruster = Mathf.Clamp(Input.GetAxis(verticalAxisName), -ACCEL_RESTRICT, ACCEL_RESTRICT);
             rudder = Input.GetAxis(horizontalAxisName);
             isBraking = Input.GetButton(brakingKey);
         }

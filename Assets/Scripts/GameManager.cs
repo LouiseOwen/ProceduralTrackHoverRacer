@@ -126,6 +126,7 @@ public class GameManager : MonoBehaviour
     const float ADV_AI_TARGET_OFFSET = 400.0f;
     const float MID_AI_TAREGT_OFFSET = 200.0f;
     const float BACK_AI_TARGET_OFFSET = -400.0f;
+    const float AI_GROUP_RANGE = 100.0f;
 
 	[Header("Race Settings")]
 	public int numberOfLaps = 3;			//The number of laps to complete MAGIC OR SET BY PLAYER BEFORE RACE?
@@ -317,6 +318,22 @@ public class GameManager : MonoBehaviour
         racePositions.Sort(delegate (Ship s1, Ship s2) { return s2.GetCounter().CompareTo(s1.GetCounter()); });
     }
 
+    private void OnGUI() // WORKS BUT TIDY IT UP AND MAKE IT NICE - also make sure it's not too intensive
+    {
+        if (racePositions != null)
+        {
+            GUI.Label(new Rect(0, 0, 125, 125), racePositions[0].GetAINumber().ToString());
+            GUI.Label(new Rect(0, 15, 125, 125), racePositions[1].GetAINumber().ToString());
+            GUI.Label(new Rect(0, 30, 125, 125), racePositions[2].GetAINumber().ToString());
+            GUI.Label(new Rect(0, 45, 125, 125), racePositions[3].GetAINumber().ToString());
+            GUI.Label(new Rect(0, 60, 125, 125), racePositions[4].GetAINumber().ToString());
+            GUI.Label(new Rect(0, 75, 125, 125), racePositions[5].GetAINumber().ToString());
+            GUI.Label(new Rect(0, 90, 125, 125), racePositions[6].GetAINumber().ToString());
+            GUI.Label(new Rect(0, 105, 125, 125), racePositions[7].GetAINumber().ToString());
+            GUI.Label(new Rect(0, 120, 125, 125), racePositions[8].GetAINumber().ToString());
+        }
+    }
+
     public void UpdateSkillRequirements(float playerCounter, float targetOffset, float aiCounter, ref Ship aiShip)
     {
         float targetPos = playerCounter + targetOffset; // calculate the target position of the ai ship
@@ -339,19 +356,19 @@ public class GameManager : MonoBehaviour
             }
         }
         // if they are at that value (range) then keep steady
-        else if (aiCounter > targetPos - 100.0f && aiCounter < targetPos + 100.0f) // MAGIC FIGURE OUT IF THESE 100.0f ARE NECESSARY - PLAY TESTING SEEMS TO SUGGEST YES
+        else if (aiCounter > targetPos - AI_GROUP_RANGE && aiCounter < targetPos + AI_GROUP_RANGE)
         {
             Debug.Log(aiShip.GetAINumber() + " I'm just right!");
             aiShip.SetAIMidSkill();
         }
         // if they are behind that value then gradually increase their skills
-        else if (aiCounter < targetPos - 100.0f) // MAGIC
+        else if (aiCounter < targetPos - AI_GROUP_RANGE)
         {
             Debug.Log(aiShip.GetAINumber() + " I gotta increase my skill!");
             aiShip.SetAIBestSkill();
         }
         // if they are in front of that value then gradually reduce their skills
-        else if (aiCounter > targetPos + 100.0f) // MAGIC
+        else if (aiCounter > targetPos + AI_GROUP_RANGE)
         {
             Debug.Log(aiShip.GetAINumber() + " I'm too good, gotta decrease skill.");
             aiShip.SetAIWorstSkill();
