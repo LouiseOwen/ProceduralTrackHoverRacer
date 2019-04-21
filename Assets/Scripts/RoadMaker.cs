@@ -14,6 +14,8 @@ public class RoadMaker : MonoBehaviour
     private float segments = 300.0f; // number of extrusions, helps calculate number of points in track by determining degrees between each point (300 appears to be best number, may as well make consistent)
 
     [SerializeField] private GameObject car;
+    [SerializeField] private GameObject finishLine;
+    [SerializeField] private GameObject lapChecker;
 
     // Road dimentions
     private float lineWidth = 0.3f; // width central line
@@ -81,6 +83,17 @@ public class RoadMaker : MonoBehaviour
 
         car.transform.position = points[0];
         car.transform.LookAt(points[1]);
+
+        finishLine.transform.position = points[2];
+        finishLine.transform.LookAt(points[3]);
+        finishLine.transform.position += new Vector3(0.0f, 5.0f, 0.0f);
+        finishLine.transform.localScale = new Vector3(roadWidth * 2, finishLine.transform.localScale.y, finishLine.transform.localScale.z);
+
+        int lapCheckerWaypoint = points.Count - 10;
+        lapChecker.transform.position = points[lapCheckerWaypoint];
+        lapChecker.transform.LookAt(points[lapCheckerWaypoint + 1]);
+        lapChecker.transform.position += new Vector3(0.0f, 5.0f, 0.0f);
+        //finishLine.transform.localScale = new Vector3(roadWidth * 2, finishLine.transform.localScale.y, finishLine.transform.localScale.z);
 
         meshFilter.mesh = mb.CreateMesh();
         meshCollider.sharedMesh = meshFilter.mesh;

@@ -19,6 +19,7 @@ public class Ship
     private Vector3 currentPosition;
     private float counter;
     private PlayerInput aiControl;
+    private bool lapReady = false;
 
     public Ship(int aiNum, string name, AIType type, int currLap, int currWaypoint, Vector3 currPos)
     {
@@ -77,6 +78,11 @@ public class Ship
         return counter;
     }
 
+    public bool LapReady()
+    {
+        return lapReady;
+    }
+
     // Setters
     public void SetCurrPos(Vector3 currPos)
     {
@@ -116,6 +122,11 @@ public class Ship
     public void SetAIWorstSkill()
     {
         aiControl.WorstSkill();
+    }
+
+    public void SetLapReady(bool value)
+    {
+        lapReady = value;
     }
 }
 
@@ -414,17 +425,23 @@ public class GameManager : MonoBehaviour
 
     public void AICompletedLap(int aiNum)
     {
-        if (isGameOver)
+        if (isGameOver || !aiShips[aiNum].LapReady()) // or AI not ready ADD THIS
             return;
 
         aiShips[aiNum].IncrementCurrLap();
         aiShips[aiNum].SetCurrWaypoint(0);
+        aiShips[aiNum].SetLapReady(false);
 
         if (aiShips[aiNum].GetCurrLap() >= numberOfLaps)
         {
             //Debug.Log("AI " + aiNum + " HAS FINISHED RACE");
             // it's ai? probs just keep going
         }
+    }
+
+    public void AIPassedLapChecker(int aiNum)
+    {
+        aiShips[aiNum].SetLapReady(true);
     }
 
     public void PlayerPassedWaypoint(int waypoint)

@@ -16,5 +16,19 @@ public class LapChecker : MonoBehaviour
 			//...set the isReady variable of the FinishLine script
 			finishLine.isReady = true;
 		}
-	}
+
+        if (other.gameObject.CompareTag("AISensor"))
+        {
+            string aiName = other.gameObject.name;
+            int aiNum;
+            string[] nameSegments = aiName.Split('_');
+            for (int i = 0; i < nameSegments.Length; i++)
+            {
+                if (int.TryParse(nameSegments[i], out aiNum))
+                {
+                    GameManager.instance.AIPassedLapChecker(aiNum);
+                }
+            }
+        }
+    }
 }
