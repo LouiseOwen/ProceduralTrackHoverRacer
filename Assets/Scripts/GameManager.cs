@@ -12,6 +12,7 @@ public enum AIType { Advanced, Middle, Back, Close, Not }
 public class Ship
 {
     private int aiNumber;
+    private string aiName; // for display purposes
     private AIType aiType;
     private int currentLap;
     private int currentWaypoint;
@@ -19,18 +20,20 @@ public class Ship
     private float counter;
     private PlayerInput aiControl;
 
-    public Ship(int aiNum, AIType type, int currLap, int currWaypoint, Vector3 currPos)
+    public Ship(int aiNum, string name, AIType type, int currLap, int currWaypoint, Vector3 currPos)
     {
         aiNumber = aiNum;
+        aiName = name;
         aiType = type;
         currentLap = currLap;
         currentWaypoint = currWaypoint;
         currentPosition = currPos;
     }
 
-    public Ship(int aiNum, AIType type, int currLap, int currWaypoint, Vector3 currPos, GameObject shipObject)
+    public Ship(int aiNum, string name, AIType type, int currLap, int currWaypoint, Vector3 currPos, GameObject shipObject)
     {
         aiNumber = aiNum;
+        aiName = name;
         aiType = type;
         currentLap = currLap;
         currentWaypoint = currWaypoint;
@@ -42,6 +45,11 @@ public class Ship
     public int GetAINumber()
     {
         return aiNumber;
+    }
+
+    public string GetAIName()
+    {
+        return aiName;
     }
 
     public AIType GetAIType()
@@ -141,7 +149,7 @@ public class GameManager : MonoBehaviour
 	bool isGameOver;						//A flag to determine if the game is over
 	bool raceHasBegun;                      //A flag to determine if the race has begun
     [SerializeField] GameObject playerShipObj;
-    Ship playerShip = new Ship(999, AIType.Not, 0, 0, Vector3.zero); // to store player ship details
+    Ship playerShip = new Ship(999, "Player", AIType.Not, 0, 0, Vector3.zero); // to store player ship details
     
     // AI
     [SerializeField] GameObject[] aiVehicles; // needed for correct count and reference to the car's attributes i.e. the gameobjects themselves
@@ -204,13 +212,15 @@ public class GameManager : MonoBehaviour
         positions[5] = new Vector3(-7.5f, 0.0f, 2.5f);
         positions[6] = new Vector3(-7.5f, 0.0f, -2.5f);
         positions[7] = new Vector3(-7.5f, 0.0f, -7.5f);
+        // MAGIC
+        string[] aiNames = new string[8] { "Mario", "Luigi", "Peach", "Toad", "Yoshi", "Bowser", "Daisy", "Wario" };
 
         aiShips = new Ship[aiVehicles.Length];
         for (int i = 0; i < aiShips.Length; i++)
         {
             aiVehicles[i].transform.rotation = playerShipObj.transform.rotation;
             aiVehicles[i].transform.position = playerShipObj.transform.position + positions[i];
-            aiShips[i] = new Ship(i, (AIType)(i % NUM_AI_TYPES), 0, 0, aiVehicles[i].transform.position, aiVehicles[i]);
+            aiShips[i] = new Ship(i, aiNames[i], (AIType)(i % NUM_AI_TYPES), 0, 0, aiVehicles[i].transform.position, aiVehicles[i]);
             aiShips[i].SetAIBestSkill(); // check if race has been going for number of seconds before activating dynamic difficulty
         }
         for (int i = 0; i < aiShips.Length; i++)
@@ -318,19 +328,20 @@ public class GameManager : MonoBehaviour
         racePositions.Sort(delegate (Ship s1, Ship s2) { return s2.GetCounter().CompareTo(s1.GetCounter()); });
     }
 
-    private void OnGUI() // WORKS BUT TIDY IT UP AND MAKE IT NICE - also make sure it's not too intensive
+    private void OnGUI()
     {
         if (racePositions != null)
         {
-            GUI.Label(new Rect(0, 0, 125, 125), racePositions[0].GetAINumber().ToString());
-            GUI.Label(new Rect(0, 15, 125, 125), racePositions[1].GetAINumber().ToString());
-            GUI.Label(new Rect(0, 30, 125, 125), racePositions[2].GetAINumber().ToString());
-            GUI.Label(new Rect(0, 45, 125, 125), racePositions[3].GetAINumber().ToString());
-            GUI.Label(new Rect(0, 60, 125, 125), racePositions[4].GetAINumber().ToString());
-            GUI.Label(new Rect(0, 75, 125, 125), racePositions[5].GetAINumber().ToString());
-            GUI.Label(new Rect(0, 90, 125, 125), racePositions[6].GetAINumber().ToString());
-            GUI.Label(new Rect(0, 105, 125, 125), racePositions[7].GetAINumber().ToString());
-            GUI.Label(new Rect(0, 120, 125, 125), racePositions[8].GetAINumber().ToString());
+            GUI.Box(new Rect(0, 0, 125, 160), "Rankings");
+            GUI.Label(new Rect(10, 15, 150, 20), "1st   " + racePositions[0].GetAIName() + " (" + racePositions[0].GetAIType().ToString()[0] + ")");
+            GUI.Label(new Rect(10, 30, 150, 20), "2nd  " + racePositions[1].GetAIName() + " (" + racePositions[1].GetAIType().ToString()[0] + ")");
+            GUI.Label(new Rect(10, 45, 150, 20), "3rd   " + racePositions[2].GetAIName() + " (" + racePositions[2].GetAIType().ToString()[0] + ")");
+            GUI.Label(new Rect(10, 60, 150, 20), "4th   " + racePositions[3].GetAIName() + " (" + racePositions[3].GetAIType().ToString()[0] + ")");
+            GUI.Label(new Rect(10, 75, 150, 20), "5th   " + racePositions[4].GetAIName() + " (" + racePositions[4].GetAIType().ToString()[0] + ")");
+            GUI.Label(new Rect(10, 90, 150, 20), "6th   " + racePositions[5].GetAIName() + " (" + racePositions[5].GetAIType().ToString()[0] + ")");
+            GUI.Label(new Rect(10, 105, 150, 20), "7th   " + racePositions[6].GetAIName() + " (" + racePositions[6].GetAIType().ToString()[0] + ")");
+            GUI.Label(new Rect(10, 120, 150, 20), "8th   " + racePositions[7].GetAIName() + " (" + racePositions[7].GetAIType().ToString()[0] + ")");
+            GUI.Label(new Rect(10, 135, 150, 20), "9th   " + racePositions[8].GetAIName() + " (" + racePositions[8].GetAIType().ToString()[0] + ")");
         }
     }
 
