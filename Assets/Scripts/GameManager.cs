@@ -157,8 +157,8 @@ public class GameManager : MonoBehaviour
 	public GameObject gameOverUI;			//A reference to the UI objects that appears when the game is complete
 
 	float[] lapTimes;						//An array containing the player's lap times
-	bool isGameOver;						//A flag to determine if the game is over
-	bool raceHasBegun;                      //A flag to determine if the race has begun
+	bool isGameOver = false;						//A flag to determine if the game is over
+	bool raceHasBegun = false;                      //A flag to determine if the race has begun
     [SerializeField] GameObject playerShipObj;
     Ship playerShip = new Ship(999, "Player", AIType.Not, 0, 0, Vector3.zero); // to store player ship details
     
