@@ -207,30 +207,30 @@ public class GameManager : MonoBehaviour
 
 		//Initialize the lapTimes array and set that the race has begun
 		lapTimes = new float[numberOfLaps];
-		raceHasBegun = true;
+		//raceHasBegun = true;
 
         //Initialise Player
         playerShip.SetCurrPos(playerShipObj.transform.position);
 
         //Initialise AI
-        Vector3[] positions = new Vector3[8]; // MAGIC - although technically a const array of offsets?
-        positions[0] = new Vector3(0.0f, 0.0f, 10.0f);
-        positions[1] = new Vector3(0.0f, 0.0f, 5.0f);
-        // player car here (0.0f, 0.0f, 0.0f)
-        positions[2] = new Vector3(0.0f, 0.0f, -5.0f);
-        positions[3] = new Vector3(-7.5f, 0.0f, 12.5f);
-        positions[4] = new Vector3(-7.5f, 0.0f, 7.5f);
-        positions[5] = new Vector3(-7.5f, 0.0f, 2.5f);
-        positions[6] = new Vector3(-7.5f, 0.0f, -2.5f);
-        positions[7] = new Vector3(-7.5f, 0.0f, -7.5f);
+        //Vector3[] positions = new Vector3[8]; // MAGIC - although technically a const array of offsets?
+        //positions[0] = new Vector3(0.0f, 0.0f, 10.0f);
+        //positions[1] = new Vector3(0.0f, 0.0f, 5.0f);
+        //// player car here (0.0f, 0.0f, 0.0f)
+        //positions[2] = new Vector3(0.0f, 0.0f, -5.0f);
+        //positions[3] = new Vector3(-7.5f, 0.0f, 12.5f);
+        //positions[4] = new Vector3(-7.5f, 0.0f, 7.5f);
+        //positions[5] = new Vector3(-7.5f, 0.0f, 2.5f);
+        //positions[6] = new Vector3(-7.5f, 0.0f, -2.5f);
+        //positions[7] = new Vector3(-7.5f, 0.0f, -7.5f);
         // MAGIC
         string[] aiNames = new string[8] { "Mario", "Luigi", "Peach", "Toad", "Yoshi", "Bowser", "Daisy", "Wario" };
 
         aiShips = new Ship[aiVehicles.Length];
         for (int i = 0; i < aiShips.Length; i++)
         {
-            aiVehicles[i].transform.rotation = playerShipObj.transform.rotation;
-            aiVehicles[i].transform.position = playerShipObj.transform.position + positions[i];
+            //aiVehicles[i].transform.rotation = playerShipObj.transform.rotation;
+            //aiVehicles[i].transform.position = playerShipObj.transform.position + positions[i];
             aiShips[i] = new Ship(i, aiNames[i], (AIType)(i % NUM_AI_TYPES), 0, 0, aiVehicles[i].transform.position, aiVehicles[i]);
             aiShips[i].SetAIBestSkill(); // check if race has been going for number of seconds before activating dynamic difficulty
         }
@@ -341,7 +341,7 @@ public class GameManager : MonoBehaviour
 
     private void OnGUI()
     {
-        if (racePositions != null)
+        if (IsActiveGame() && racePositions != null)
         {
             GUI.Box(new Rect(0, 0, 125, 160), "Rankings");
             GUI.Label(new Rect(10, 15, 150, 20), "1st   " + racePositions[0].GetAIName() + " (" + racePositions[0].GetAIType().ToString()[0] + ")");
@@ -504,4 +504,9 @@ public class GameManager : MonoBehaviour
 		//Restart the scene by loading the scene that is currently loaded
 		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 	}
+
+    public void SetRaceHasBegun()
+    {
+        raceHasBegun = true;
+    }
 }

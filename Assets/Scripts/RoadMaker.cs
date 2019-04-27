@@ -2,15 +2,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Playables;
 
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshCollider))]
 public class RoadMaker : MonoBehaviour
 {
-    const float WAYPOINT_DIFF = 22.5f; // difference in angle to place next waypoint
+    const float WAYPOINT_DIFF = 16.0f; //22.5f; // difference in angle to place next waypoint WEIRD ERRORS AT 15.0F
 
-    public float radius = 90.0f; // can be pretty much anything, just says how big the circle is N.B. bigger radius smooths waviness (probably cap this variable)
+    public float radius /*= 90.0f*/; // can be pretty much anything (better to be positive), just says how big the circle is N.B. bigger radius smooths waviness (probably cap this variable)
     private float segments = 300.0f; // number of extrusions, helps calculate number of points in track by determining degrees between each point (300 appears to be best number, may as well make consistent)
 
     [SerializeField] private GameObject car;
@@ -23,10 +24,10 @@ public class RoadMaker : MonoBehaviour
     private float edgeWidth = 0.5f; // walls
     private float edgeHeight = 2.5f;
 
-    public float waviness = 80.0f; // can really be any positive number, major errors only occur by start (make fixed starting straight? or just keep this value steady)
+    public float waviness /*= 80.0f*/; // max:100 can really be any positive number, major errors only occur by start (make fixed starting straight? or just keep this value steady)
     private float waveScale = 0.1f; // keep steady 0.1
 
-    public Vector2 waveOffset = new Vector2(256.0f, 0.0f); // sets up adding waviness, both numbers can be anything?! maybe make this the user adjust
+    public Vector2 waveOffset /*= new Vector2(256.0f, 0.0f)*/; // max:360 (have both numbers set to same thing?) sets up adding waviness, both numbers can be anything?! maybe make this the user adjust
     private Vector2 waveStep = new Vector2(0.3f, 0.3f); // keep steady
 
     private bool stripeCheck = true; // for the edge walls (to make stripey)
@@ -34,7 +35,11 @@ public class RoadMaker : MonoBehaviour
     [SerializeField] private GameObject waypoint;
     [SerializeField] private Transform waypoints;
     [SerializeField] private WaypointCircuit waypointCircuit;
- 
+
+    [SerializeField] private GameObject[] aiVehicles;
+    [SerializeField] private GameObject cutsceneObject;
+    private PlayableDirector cutscene;
+
     void Start ()
     {
         MeshFilter meshFilter = GetComponent<MeshFilter>();
@@ -83,6 +88,24 @@ public class RoadMaker : MonoBehaviour
 
         car.transform.position = points[0];
         car.transform.LookAt(points[1]);
+        car.SetActive(true);
+
+        Vector3[] positions = new Vector3[8]; // MAGIC - although technically a const array of offsets?
+        positions[0] = new Vector3(0.0f, 0.0f, 10.0f);
+        positions[1] = new Vector3(0.0f, 0.0f, 5.0f);
+        // player car here (0.0f, 0.0f, 0.0f)
+        positions[2] = new Vector3(0.0f, 0.0f, -5.0f);
+        positions[3] = new Vector3(-7.5f, 0.0f, 12.5f);
+        positions[4] = new Vector3(-7.5f, 0.0f, 7.5f);
+        positions[5] = new Vector3(-7.5f, 0.0f, 2.5f);
+        positions[6] = new Vector3(-7.5f, 0.0f, -2.5f);
+        positions[7] = new Vector3(-7.5f, 0.0f, -7.5f);
+        for (int i = 0; i < aiVehicles.Length; i++)
+        {
+            aiVehicles[i].transform.rotation = car.transform.rotation;
+            aiVehicles[i].transform.position = car.transform.position + positions[i];
+            aiVehicles[i].SetActive(true);
+        }
 
         finishLine.transform.position = points[2];
         finishLine.transform.LookAt(points[3]);
@@ -115,6 +138,9 @@ public class RoadMaker : MonoBehaviour
         }
         waypointCircuit.CreateRouteUsingChildObjects();
         waypointCircuit.CachePositionsAndDistances(); // might not need (test this)
+
+        cutscene = cutsceneObject.GetComponent<PlayableDirector>();
+        cutscene.Play();
     }
 
     private void ExtrudeRoad(MeshBuilder mb, Vector3 pPrev, Vector3 p0, Vector3 p1)
@@ -190,5 +216,25 @@ public class RoadMaker : MonoBehaviour
 
         mb.BuildTriangle(br, bl, tr, submesh);
         mb.BuildTriangle(bl, tl, tr, submesh);
+    }
+
+    public void SetRadius(float value)
+    {
+        radius = value;
+    }
+
+    public void SetWaviness(float value)
+    {
+        waviness = value;
+    }
+
+    public void SetWaveOffsetX(float value)
+    {
+        waveOffset.x = value;
+    }
+
+    public void SetWaveOffsetY(float value)
+    {
+        waveOffset.y = value;
     }
 }
