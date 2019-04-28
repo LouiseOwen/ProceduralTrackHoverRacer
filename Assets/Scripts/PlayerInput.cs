@@ -7,7 +7,7 @@ using UnityEngine;
 // CAN PROBABLY SPLIT THIS INTO TWO CLASSES (Human and AI)
 public class PlayerInput : MonoBehaviour
 {
-    const float ACCEL_RESTRICT = 0.6f;
+    const float ACCEL_RESTRICT = 0.75f;
 
     public bool isHuman;
 
