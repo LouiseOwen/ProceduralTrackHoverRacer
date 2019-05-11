@@ -178,6 +178,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] GameObject waypointsObj; // to find the exact position of a waypoint (the parent object of the waypoints)
     Vector3[] waypoints;
     List<Ship> racePositions; // ordered list of car rankings in race
+    public PlayerPositionUI playerPosUI;
     float timer = 0.0f; // to count to when ai should start reacting at start of race (after a few seconds)
     float oneLapCountVal; // the counter value of one lap (used as bonus addition to rectify counter bug and to calculate entireRaceCountVal)
     float entireRaceCountVal; // the counter value of the entire race - not sure we actually need it as it's own variable as it's not used anywhere else
@@ -377,6 +378,14 @@ public class GameManager : MonoBehaviour
             racePositions[i].SetCounter(racePositions[i].GetCurrLap() * LAP_MULTIPLIER + racePositions[i].GetCurrWaypoint() * WAYPOINT_MULTIPLIER + distFromPrevWaypoint + (oneLapCountVal * racePositions[i].GetCurrLap()));
         }
         racePositions.Sort(delegate (Ship s1, Ship s2) { return s2.GetCounter().CompareTo(s1.GetCounter()); });
+
+        for (int i = 0; i < racePositions.Capacity; i++)
+        {
+            if (racePositions[i].GetAINumber() == 999) // MAGIC
+            {
+                UpdateUI_PlayerPos(i + 1); // + 1 to take array out of zero indexed list
+            }
+        }
     }
 
     private void OnGUI()
@@ -532,6 +541,14 @@ public class GameManager : MonoBehaviour
 		if (vehicleMovement != null && shipUI != null) 
 			shipUI.SetSpeedDisplay (Mathf.Abs(vehicleMovement.speed));
 	}
+
+    void UpdateUI_PlayerPos(int playerPos)
+    {
+        if (playerPosUI != null)
+        {
+            playerPosUI.SetPlayerPos(playerPos);
+        }
+    }
 
 	public bool IsActiveGame()
 	{
