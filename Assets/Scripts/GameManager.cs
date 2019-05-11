@@ -179,6 +179,7 @@ public class GameManager : MonoBehaviour
     Vector3[] waypoints;
     List<Ship> racePositions; // ordered list of car rankings in race
     public PlayerPositionUI playerPosUI;
+    public RankingUI rankingUI;
     float timer = 0.0f; // to count to when ai should start reacting at start of race (after a few seconds)
     float oneLapCountVal; // the counter value of one lap (used as bonus addition to rectify counter bug and to calculate entireRaceCountVal)
     float entireRaceCountVal; // the counter value of the entire race - not sure we actually need it as it's own variable as it's not used anywhere else
@@ -289,6 +290,11 @@ public class GameManager : MonoBehaviour
 		//If we have an active game...
 		if (IsActiveGame())
 		{
+            if (rankingUI != null)
+            {
+                rankingUI.EnableRankingList();
+            }
+
             UpdateRacePositions(); // MAKE A NICE LIST ON SCREEN FOR THIS
             
             //for (int i = 0; i < racePositions.Capacity; i++)
@@ -348,6 +354,23 @@ public class GameManager : MonoBehaviour
                     hoverCam.Priority = CAM_HIGH_PRIORITY;
                 }
             }
+
+            // Human/AI Select Skill Level
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                playerShip.SetAIBestSkill();
+                Debug.Log("Human/AI has best skill");
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha2))
+            {
+                playerShip.SetAIMidSkill();
+                Debug.Log("Human/AI has mid skill");
+            }
+            else if (Input.GetKeyDown(KeyCode.Alpha3))
+            {
+                playerShip.SetAIWorstSkill();
+                Debug.Log("Human/AI has worst skill");
+            }
         }
 	}
 
@@ -381,6 +404,9 @@ public class GameManager : MonoBehaviour
 
         for (int i = 0; i < racePositions.Capacity; i++)
         {
+            string driverName = racePositions[i].GetAIName() + " (" + racePositions[i].GetAIType().ToString()[0] + ")";
+            rankingUI.SetRankingPosition(i, driverName);
+
             if (racePositions[i].GetAINumber() == 999) // MAGIC
             {
                 UpdateUI_PlayerPos(i + 1); // + 1 to take array out of zero indexed list
@@ -388,22 +414,22 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void OnGUI()
-    {
-        if (IsActiveGame() && racePositions != null)
-        {
-            GUI.Box(new Rect(0, 0, 125, 160), "Rankings");
-            GUI.Label(new Rect(10, 15, 150, 20), "1st   " + racePositions[0].GetAIName() + " (" + racePositions[0].GetAIType().ToString()[0] + ")");
-            GUI.Label(new Rect(10, 30, 150, 20), "2nd  " + racePositions[1].GetAIName() + " (" + racePositions[1].GetAIType().ToString()[0] + ")");
-            GUI.Label(new Rect(10, 45, 150, 20), "3rd   " + racePositions[2].GetAIName() + " (" + racePositions[2].GetAIType().ToString()[0] + ")");
-            GUI.Label(new Rect(10, 60, 150, 20), "4th   " + racePositions[3].GetAIName() + " (" + racePositions[3].GetAIType().ToString()[0] + ")");
-            GUI.Label(new Rect(10, 75, 150, 20), "5th   " + racePositions[4].GetAIName() + " (" + racePositions[4].GetAIType().ToString()[0] + ")");
-            GUI.Label(new Rect(10, 90, 150, 20), "6th   " + racePositions[5].GetAIName() + " (" + racePositions[5].GetAIType().ToString()[0] + ")");
-            GUI.Label(new Rect(10, 105, 150, 20), "7th   " + racePositions[6].GetAIName() + " (" + racePositions[6].GetAIType().ToString()[0] + ")");
-            GUI.Label(new Rect(10, 120, 150, 20), "8th   " + racePositions[7].GetAIName() + " (" + racePositions[7].GetAIType().ToString()[0] + ")");
-            GUI.Label(new Rect(10, 135, 150, 20), "9th   " + racePositions[8].GetAIName() + " (" + racePositions[8].GetAIType().ToString()[0] + ")");
-        }
-    }
+    //private void OnGUI()
+    //{
+    //    if (IsActiveGame() && racePositions != null)
+    //    {
+    //        GUI.Box(new Rect(0, 0, 125, 160), "Rankings");
+    //        GUI.Label(new Rect(10, 15, 150, 20), "1st   " + racePositions[0].GetAIName() + " (" + racePositions[0].GetAIType().ToString()[0] + ")");
+    //        GUI.Label(new Rect(10, 30, 150, 20), "2nd  " + racePositions[1].GetAIName() + " (" + racePositions[1].GetAIType().ToString()[0] + ")");
+    //        GUI.Label(new Rect(10, 45, 150, 20), "3rd   " + racePositions[2].GetAIName() + " (" + racePositions[2].GetAIType().ToString()[0] + ")");
+    //        GUI.Label(new Rect(10, 60, 150, 20), "4th   " + racePositions[3].GetAIName() + " (" + racePositions[3].GetAIType().ToString()[0] + ")");
+    //        GUI.Label(new Rect(10, 75, 150, 20), "5th   " + racePositions[4].GetAIName() + " (" + racePositions[4].GetAIType().ToString()[0] + ")");
+    //        GUI.Label(new Rect(10, 90, 150, 20), "6th   " + racePositions[5].GetAIName() + " (" + racePositions[5].GetAIType().ToString()[0] + ")");
+    //        GUI.Label(new Rect(10, 105, 150, 20), "7th   " + racePositions[6].GetAIName() + " (" + racePositions[6].GetAIType().ToString()[0] + ")");
+    //        GUI.Label(new Rect(10, 120, 150, 20), "8th   " + racePositions[7].GetAIName() + " (" + racePositions[7].GetAIType().ToString()[0] + ")");
+    //        GUI.Label(new Rect(10, 135, 150, 20), "9th   " + racePositions[8].GetAIName() + " (" + racePositions[8].GetAIType().ToString()[0] + ")");
+    //    }
+    //}
 
     public void UpdateSkillRequirements(float playerCounter, float targetOffset, float aiCounter, ref Ship aiShip)
     {

@@ -202,6 +202,7 @@ public class PlayerInput : MonoBehaviour
         m_BrakeSensitivity = 0.5f;
         m_AccelSensitivity = 1.0f;
         m_SteerSensitivity = 0.7f;
+        m_LateralWanderDistance = 5.0f;
     }
 
     public void MidSkill()
@@ -210,6 +211,7 @@ public class PlayerInput : MonoBehaviour
         m_BrakeSensitivity = 0.75f;
         m_AccelSensitivity = 0.75f;
         m_SteerSensitivity = 0.5f;
+        m_LateralWanderDistance = 7.5f;
     }
 
     public void WorstSkill()
@@ -218,6 +220,7 @@ public class PlayerInput : MonoBehaviour
         m_BrakeSensitivity = 1.0f;
         m_AccelSensitivity = 0.5f;
         m_SteerSensitivity = 0.3f;
+        m_LateralWanderDistance = 10.0f;
     }
 
     public void ToggleIsHuman()
