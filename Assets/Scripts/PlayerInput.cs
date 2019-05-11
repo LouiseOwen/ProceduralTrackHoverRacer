@@ -219,4 +219,9 @@ public class PlayerInput : MonoBehaviour
         m_AccelSensitivity = 0.5f;
         m_SteerSensitivity = 0.3f;
     }
+
+    public void ToggleIsHuman()
+    {
+        isHuman = !isHuman;
+    }
 }

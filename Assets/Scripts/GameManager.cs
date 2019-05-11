@@ -5,6 +5,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
+using Cinemachine;
 
 //seperate these
 public enum AIType { Advanced, Middle, Back, Close, Not }
@@ -109,6 +110,11 @@ public class Ship
         aiType = type;
     }
 
+    public void SetShipObject(GameObject shipObject)
+    {
+        aiControl = shipObject.GetComponent<PlayerInput>();
+    }
+
     public void SetAIBestSkill()
     {
         aiControl.BestSkill();
@@ -146,6 +152,8 @@ public class GameManager : MonoBehaviour
     const float MID_AI_TAREGT_OFFSET = 200.0f;
     const float BACK_AI_TARGET_OFFSET = -400.0f;
     const float AI_GROUP_RANGE = 100.0f;
+    const int CAM_HIGH_PRIORITY = 10;
+    const int CAM_LOW_PRIORITY = 5;
 
 	[Header("Race Settings")]
 	public int numberOfLaps = 3;			//The number of laps to complete MAGIC OR SET BY PLAYER BEFORE RACE?
@@ -174,6 +182,13 @@ public class GameManager : MonoBehaviour
     float oneLapCountVal; // the counter value of one lap (used as bonus addition to rectify counter bug and to calculate entireRaceCountVal)
     float entireRaceCountVal; // the counter value of the entire race - not sure we actually need it as it's own variable as it's not used anywhere else
     float aiCutOffCountVal; // counter value where once ai has passed it will reduce skill to give player chance (80% of race)
+
+    // Camera management
+    [SerializeField] GameObject followCameraObj; // for viewing ship from behind
+    [SerializeField] GameObject hoverCameraObj; // for viewing ship from above
+    CinemachineVirtualCamera followCam;
+    CinemachineVirtualCamera hoverCam;
+    KeyCode toggleHumanButton = KeyCode.H;
 
 
 	void Awake()
@@ -211,6 +226,10 @@ public class GameManager : MonoBehaviour
 
         //Initialise Player
         playerShip.SetCurrPos(playerShipObj.transform.position);
+
+        // Set now just in case player wants to watch AI
+        playerShip.SetShipObject(playerShipObj);
+        playerShip.SetAIMidSkill();
 
         //Initialise AI
         //Vector3[] positions = new Vector3[8]; // MAGIC - although technically a const array of offsets?
@@ -255,12 +274,16 @@ public class GameManager : MonoBehaviour
         //Debug.Log(entireRaceCountVal);
         aiCutOffCountVal = entireRaceCountVal * AI_CUTOFF_PERCENT;
 
+        //Initialise Cameras
+        followCam = followCameraObj.GetComponent<CinemachineVirtualCamera>();
+        hoverCam = hoverCameraObj.GetComponent<CinemachineVirtualCamera>();
+
 	}
 
 	void Update()
 	{
-		//Update the speed on the ship UI
-		UpdateUI_Speed ();
+        //Update the speed on the ship UI
+        UpdateUI_Speed ();
 
 		//If we have an active game...
 		if (IsActiveGame())
@@ -304,10 +327,27 @@ public class GameManager : MonoBehaviour
                 }
             }
 
-            //...calculate the time for the lap and update the UI MAKE THIS WORK AGAIN
+            //...calculate the time for the lap and update the UI
             lapTimes[playerShip.GetCurrLap()] += Time.deltaTime;
 			UpdateUI_LapTime();
-		}
+
+            // Toggle Human or AI Driver
+            if (Input.GetKeyDown(toggleHumanButton))
+            {
+                playerShipObj.GetComponent<PlayerInput>().ToggleIsHuman();
+
+                if (playerShipObj.GetComponent<PlayerInput>().isHuman)
+                {
+                    followCam.Priority = CAM_HIGH_PRIORITY;
+                    hoverCam.Priority = CAM_LOW_PRIORITY;
+                }
+                else
+                {
+                    followCam.Priority = CAM_LOW_PRIORITY;
+                    hoverCam.Priority = CAM_HIGH_PRIORITY;
+                }
+            }
+        }
 	}
 
     public float GetFractionOfPathCovered(Vector3 position, Vector3 currWaypoint, Vector3 nextWaypoint)
