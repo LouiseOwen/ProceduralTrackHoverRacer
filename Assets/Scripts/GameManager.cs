@@ -163,6 +163,8 @@ public class GameManager : MonoBehaviour
 	public ShipUI shipUI;					//A reference to the ship's ShipUI script
 	public LapTimeUI lapTimeUI;				//A reference to the LapTimeUI script in the scene
 	public GameObject gameOverUI;			//A reference to the UI objects that appears when the game is complete
+    public GameObject pausedUI;
+    public static bool gameIsPaused = false;
 
 	float[] lapTimes;						//An array containing the player's lap times
 	bool isGameOver = false;						//A flag to determine if the game is over
@@ -173,6 +175,7 @@ public class GameManager : MonoBehaviour
     // AI
     [SerializeField] GameObject[] aiVehicles; // needed for correct count and reference to the car's attributes i.e. the gameobjects themselves
     Ship[] aiShips; // race data about the ai
+    public AIThoughtsUI aiThoughtsUI;
 
     // Race management
     [SerializeField] GameObject waypointsObj; // to find the exact position of a waypoint (the parent object of the waypoints)
@@ -308,6 +311,11 @@ public class GameManager : MonoBehaviour
             timer += Time.deltaTime;
             if (timer > DYNAMIC_DIFF_BEGIN)
             {
+                if (aiThoughtsUI != null)
+                {
+                    aiThoughtsUI.EnableAIThoughtsList();
+                }
+
                 // Dynamic Difficulty Adjust
                 float playerShipCounter = playerShip.GetCounter(); // so that we know where the player ship is
                 for (int i = 0; i < aiShips.Length; i++)
@@ -371,6 +379,19 @@ public class GameManager : MonoBehaviour
                 playerShip.SetAIWorstSkill();
                 Debug.Log("Human/AI has worst skill");
             }
+
+            // Pause and Resume()
+            if (Input.GetKeyDown(KeyCode.P))
+            {
+                if (gameIsPaused)
+                {
+                    Resume();
+                }
+                else
+                {
+                    Pause();
+                }
+            }
         }
 	}
 
@@ -414,25 +435,11 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    //private void OnGUI()
-    //{
-    //    if (IsActiveGame() && racePositions != null)
-    //    {
-    //        GUI.Box(new Rect(0, 0, 125, 160), "Rankings");
-    //        GUI.Label(new Rect(10, 15, 150, 20), "1st   " + racePositions[0].GetAIName() + " (" + racePositions[0].GetAIType().ToString()[0] + ")");
-    //        GUI.Label(new Rect(10, 30, 150, 20), "2nd  " + racePositions[1].GetAIName() + " (" + racePositions[1].GetAIType().ToString()[0] + ")");
-    //        GUI.Label(new Rect(10, 45, 150, 20), "3rd   " + racePositions[2].GetAIName() + " (" + racePositions[2].GetAIType().ToString()[0] + ")");
-    //        GUI.Label(new Rect(10, 60, 150, 20), "4th   " + racePositions[3].GetAIName() + " (" + racePositions[3].GetAIType().ToString()[0] + ")");
-    //        GUI.Label(new Rect(10, 75, 150, 20), "5th   " + racePositions[4].GetAIName() + " (" + racePositions[4].GetAIType().ToString()[0] + ")");
-    //        GUI.Label(new Rect(10, 90, 150, 20), "6th   " + racePositions[5].GetAIName() + " (" + racePositions[5].GetAIType().ToString()[0] + ")");
-    //        GUI.Label(new Rect(10, 105, 150, 20), "7th   " + racePositions[6].GetAIName() + " (" + racePositions[6].GetAIType().ToString()[0] + ")");
-    //        GUI.Label(new Rect(10, 120, 150, 20), "8th   " + racePositions[7].GetAIName() + " (" + racePositions[7].GetAIType().ToString()[0] + ")");
-    //        GUI.Label(new Rect(10, 135, 150, 20), "9th   " + racePositions[8].GetAIName() + " (" + racePositions[8].GetAIType().ToString()[0] + ")");
-    //    }
-    //}
-
     public void UpdateSkillRequirements(float playerCounter, float targetOffset, float aiCounter, ref Ship aiShip)
     {
+        int aiNumber = aiShip.GetAINumber();
+        string aiName = aiShip.GetAIName();
+
         float targetPos = playerCounter + targetOffset; // calculate the target position of the ai ship
 
         // if they are in the last section of the race
@@ -442,33 +449,38 @@ public class GameManager : MonoBehaviour
             {
                 if (aiCounter > playerCounter) // only if ai is ahead of the player
                 {
-                    Debug.Log("Turning off my dynamic difficulty to give player a chance!");
+                    //Debug.Log("Turning off my dynamic difficulty to give player a chance!");
                     aiShip.SetAIMidSkill();
+                    UpdateUI_AIThought(aiNumber, aiName + "'s DCB is OFF.");
                 }
                 else
                 {
-                    Debug.Log("Player is ahead, increasing skill to maximum!");
+                    //Debug.Log("Player is ahead, increasing skill to maximum!");
                     aiShip.SetAIBestSkill();
+                    UpdateUI_AIThought(aiNumber, aiName + "'s DCB is ON.");
                 }
             }
         }
         // if they are at that value (range) then keep steady
         else if (aiCounter > targetPos - AI_GROUP_RANGE && aiCounter < targetPos + AI_GROUP_RANGE)
         {
-            Debug.Log(aiShip.GetAINumber() + " I'm just right!");
+            //Debug.Log(aiShip.GetAINumber() + " I'm just right!");
             aiShip.SetAIMidSkill();
+            UpdateUI_AIThought(aiNumber, aiName + " is just right!");
         }
         // if they are behind that value then gradually increase their skills
         else if (aiCounter < targetPos - AI_GROUP_RANGE)
         {
-            Debug.Log(aiShip.GetAINumber() + " I gotta increase my skill!");
+            //Debug.Log(aiShip.GetAINumber() + " I gotta increase my skill!");
             aiShip.SetAIBestSkill();
+            UpdateUI_AIThought(aiNumber, aiName + " is too slow. Increasing skills.");
         }
         // if they are in front of that value then gradually reduce their skills
         else if (aiCounter > targetPos + AI_GROUP_RANGE)
         {
-            Debug.Log(aiShip.GetAINumber() + " I'm too good, gotta decrease skill.");
+            //Debug.Log(aiShip.GetAINumber() + " I'm too good, gotta decrease skill.");
             aiShip.SetAIWorstSkill();
+            UpdateUI_AIThought(aiNumber, aiName + " is too fast. Decreasing skills.");
         }
     }
 
@@ -576,6 +588,14 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    void UpdateUI_AIThought(int aiNum, string thought)
+    {
+        if (aiThoughtsUI != null)
+        {
+            aiThoughtsUI.SetAIThought(aiNum, thought);
+        }
+    }
+
 	public bool IsActiveGame()
 	{
 		//If the race has begun and the game is not over, we have an active game
@@ -587,6 +607,26 @@ public class GameManager : MonoBehaviour
 		//Restart the scene by loading the scene that is currently loaded
 		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 	}
+
+    public void Pause()
+    {
+        if (pausedUI != null)
+        {
+            pausedUI.SetActive(true);
+            Time.timeScale = 0.0f;
+            gameIsPaused = true;
+        }
+    }
+
+    public void Resume()
+    {
+        if (pausedUI != null)
+        {
+            pausedUI.SetActive(false);
+            Time.timeScale = 1.0f;
+            gameIsPaused = false;
+        }
+    }
 
     public void SetRaceHasBegun()
     {
