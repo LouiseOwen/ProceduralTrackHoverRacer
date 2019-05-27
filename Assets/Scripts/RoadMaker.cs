@@ -1,7 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
 using UnityEngine.Playables;
 
 [RequireComponent(typeof(MeshRenderer))]
@@ -86,10 +84,12 @@ public class RoadMaker : MonoBehaviour
             ExtrudeRoad(mb, pPrev, p0, p1);
         }
 
+        // place Player vehicle
         car.transform.position = points[0];
         car.transform.LookAt(points[1]);
         car.SetActive(true);
 
+        // positions for AI vehicles
         Vector3[] positions = new Vector3[8]; // MAGIC - although technically a const array of offsets?
         positions[0] = new Vector3(0.0f, 0.0f, 10.0f);
         positions[1] = new Vector3(0.0f, 0.0f, 5.0f);
@@ -100,6 +100,8 @@ public class RoadMaker : MonoBehaviour
         positions[5] = new Vector3(-7.5f, 0.0f, 2.5f);
         positions[6] = new Vector3(-7.5f, 0.0f, -2.5f);
         positions[7] = new Vector3(-7.5f, 0.0f, -7.5f);
+        
+        // place AI vehicles
         for (int i = 0; i < aiVehicles.Length; i++)
         {
             aiVehicles[i].transform.rotation = car.transform.rotation;
@@ -107,20 +109,23 @@ public class RoadMaker : MonoBehaviour
             aiVehicles[i].SetActive(true);
         }
 
+        // place and size finish line
         finishLine.transform.position = points[2];
         finishLine.transform.LookAt(points[3]);
         finishLine.transform.position += new Vector3(0.0f, 5.0f, 0.0f);
         finishLine.transform.localScale = new Vector3(roadWidth * 2, finishLine.transform.localScale.y, finishLine.transform.localScale.z);
 
+        // place lap checker (don't need to size, it follows the size of finish line - its parent object)
         int lapCheckerWaypoint = points.Count - 10;
         lapChecker.transform.position = points[lapCheckerWaypoint];
         lapChecker.transform.LookAt(points[lapCheckerWaypoint + 1]);
         lapChecker.transform.position += new Vector3(0.0f, 5.0f, 0.0f);
-        //finishLine.transform.localScale = new Vector3(roadWidth * 2, finishLine.transform.localScale.y, finishLine.transform.localScale.z);
 
+        // create mesh for racetrack
         meshFilter.mesh = mb.CreateMesh();
         meshCollider.sharedMesh = meshFilter.mesh;
 
+        // place waypoint if difference in angle between 2 points is different enough
         Vector3 current = points[0];
         for (int i = 1; i < points.Count; i++)
         {
@@ -136,9 +141,11 @@ public class RoadMaker : MonoBehaviour
                 current = points[i];
             }
         }
+        // create circuit out of waypoints for AI to use as path
         waypointCircuit.CreateRouteUsingChildObjects();
-        waypointCircuit.CachePositionsAndDistances(); // might not need (test this)
+        waypointCircuit.CachePositionsAndDistances();
 
+        // racetrack has been created, play cutscene
         cutscene = cutsceneObject.GetComponent<PlayableDirector>();
         cutscene.Play();
     }

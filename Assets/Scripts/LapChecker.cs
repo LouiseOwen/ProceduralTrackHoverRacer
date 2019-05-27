@@ -1,24 +1,24 @@
-﻿//This script ensures that the player cannot cheat by "activating" the FinishLine 
-//script once the player comes close to completing a full lap
+﻿using UnityEngine;
 
-using UnityEngine;
-// THIS SCRIPT CHECKS THE LAST CHECKPOINT SO THAT THEY DON'T CHEAT - CAN PROBS CHANGE IT SO THAT WAYPOINTCHECKER KNOWS LAST WAYPOINT AND CHECKS AGAINST THAT
 public class LapChecker : MonoBehaviour
 {
-	public FinishLine finishLine;	//Reference to the FinishLine script
+    // Lets FinishLine know when a vehicle crosses the LapChecker (tries to reduce cheating)
+    // i.e. player must pass through LapChecker to be able to register the lap
 
+    [SerializeField] private FinishLine finishLine;	// reference to FinishLine script
 
 	void OnTriggerEnter(Collider other)
 	{
-		//If the object passing through this collider is tagged as "PlayerSensor"...
+		// if the Player passes through the LapChecker
 		if (other.gameObject.CompareTag("PlayerSensor"))
 		{
-			//...set the isReady variable of the FinishLine script
-			finishLine.isReady = true;
+			finishLine.isReady = true; // they are allowed to use the FinishLine
 		}
 
+        // if the AI has passed through the LapChecker
         if (other.gameObject.CompareTag("AISensor"))
         {
+            // Code to extract the AI number from the gameobject name
             string aiName = other.gameObject.name;
             int aiNum;
             string[] nameSegments = aiName.Split('_');
@@ -26,7 +26,7 @@ public class LapChecker : MonoBehaviour
             {
                 if (int.TryParse(nameSegments[i], out aiNum))
                 {
-                    GameManager.instance.AIPassedLapChecker(aiNum);
+                    GameManager.instance.AIPassedLapChecker(aiNum); // allow them to use the FinishLine
                 }
             }
         }

@@ -1,6 +1,4 @@
-﻿//This script handles the audio and visual effects (i.e., cosmetics) for the ship. 
-
-using UnityEngine;
+﻿using UnityEngine;
 
 public class VehicleAVFX : MonoBehaviour
 {

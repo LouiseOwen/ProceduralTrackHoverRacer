@@ -1,15 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class ShowSliderVal : MonoBehaviour {
-
+public class ShowSliderVal : MonoBehaviour
+{
     private TextMeshProUGUI valueText;
     [SerializeField] private Slider slider;
 
-	// Use this for initialization
 	void Start ()
     {
         valueText = GetComponent<TextMeshProUGUI>();

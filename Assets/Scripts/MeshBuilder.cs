@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class MeshBuilder
 {
-
     private List<Vector3> vertices = new List<Vector3>();
     private List<int> indices = new List<int>();
 

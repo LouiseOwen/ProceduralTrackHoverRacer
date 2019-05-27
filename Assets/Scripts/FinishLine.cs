@@ -1,30 +1,27 @@
-﻿//This script handles letting the game manager know when the player completes a lap. It 
-//works together with the LapChecker script to ensure that the player can't cheat
-
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FinishLine : MonoBehaviour
 {
-	[HideInInspector]	public bool isReady;	//Is the player ready to complete a lap? 
+    // Lets GameManager know when a vehicle crosses the finish line, uses LapChecker to enable finish line (tries to reduce cheating)
+    // i.e. player must pass through LapChecker to be able to register the lap
 
-	public bool debugMode;						//Debug variable that enables quick testing of laps
-	
+	[HideInInspector] public bool isReady;	// is the player passed the LapChecker? 
 
-	//Called when the player drives through the finish line
+	public bool debugMode; // stops the need for LapChecker
+
 	void OnTriggerEnter(Collider other)
 	{
-		//If the player has passed through the LapChecker (isRead) OR if Debug Mode is enabled (debugMode)
-		//AND the object passing through this trigger is tagged as "PlayerSensor"...
+        // If the player has passed through the FinishLine (also checks if the player has passed the LapChecker or is in debug)
 		if ((isReady || debugMode) && other.gameObject.CompareTag("PlayerSensor"))
 		{
-			//...let the Game Manager know that the player completed a lap...
-			GameManager.instance.PlayerCompletedLap();
-			//...and deactivate the finish line until the player completes another lap
-			isReady = false;
+			GameManager.instance.PlayerCompletedLap(); // increment the player's lap count
+			isReady = false; // so that the player must cross the LapChecker before they can use the FinishLine again
 		}
 
+        // If the AI has passed through the FinishLine
         if (other.gameObject.CompareTag("AISensor"))
         {
+            // Code to extract the AI number from the gameobject name
             string aiName = other.gameObject.name;
             int aiNum;
             string[] nameSegments = aiName.Split('_');
@@ -32,7 +29,7 @@ public class FinishLine : MonoBehaviour
             {
                 if (int.TryParse(nameSegments[i], out aiNum))
                 {
-                    GameManager.instance.AICompletedLap(aiNum);
+                    GameManager.instance.AICompletedLap(aiNum); // increment the AI's lap count
                 }
             }
         }

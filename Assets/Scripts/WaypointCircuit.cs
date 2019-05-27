@@ -47,7 +47,6 @@ public class WaypointCircuit : MonoBehaviour
         }
     }
 
-
     public RoutePoint GetRoutePoint(float dist)
     {
         // position and direction
@@ -56,7 +55,6 @@ public class WaypointCircuit : MonoBehaviour
         Vector3 delta = p2 - p1;
         return new RoutePoint(p1, delta.normalized);
     }
-
 
     public Vector3 GetRoutePosition(float dist)
     {
@@ -74,19 +72,16 @@ public class WaypointCircuit : MonoBehaviour
             ++point;
         }
 
-
         // get nearest two points, ensuring points wrap-around start & end of circuit
         p1n = ((point - 1) + numPoints) % numPoints;
         p2n = point;
 
         // found point numbers, now find interpolation value between the two middle points
-
         i = Mathf.InverseLerp(distances[p1n], distances[p2n], dist);
 
         if (smoothRoute)
         {
             // smooth catmull-rom calculation between the two relevant points
-
 
             // get indices for the surrounding 2 points, because
             // four points are required by the catmull-rom function
@@ -116,7 +111,6 @@ public class WaypointCircuit : MonoBehaviour
         }
     }
 
-
     private Vector3 CatmullRom(Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3, float i)
     {
         // comments are no use here... it's the catmull-rom equation.
@@ -125,7 +119,6 @@ public class WaypointCircuit : MonoBehaviour
                ((2 * p1) + (-p0 + p2) * i + (2 * p0 - 5 * p1 + 4 * p2 - p3) * i * i +
                 (-p0 + 3 * p1 - 3 * p2 + p3) * i * i * i);
     }
-
 
     public void CachePositionsAndDistances()
     {
@@ -152,7 +145,6 @@ public class WaypointCircuit : MonoBehaviour
         }
     }
 
-
     public void CreateRouteUsingChildObjects()
     {
         var circuit = this;
@@ -170,18 +162,15 @@ public class WaypointCircuit : MonoBehaviour
         }
     }
 
-
     private void OnDrawGizmos()
     {
         DrawGizmos(false);
     }
 
-
     private void OnDrawGizmosSelected()
     {
         DrawGizmos(true);
     }
-
 
     private void DrawGizmos(bool selected)
     {

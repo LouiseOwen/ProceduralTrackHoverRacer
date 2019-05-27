@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 
-public class RankingUI : MonoBehaviour {
-
+public class RankingUI : MonoBehaviour
+{
     public GameObject[] rankingNumbers;
     public TextMeshProUGUI[] rankingLabels;
 

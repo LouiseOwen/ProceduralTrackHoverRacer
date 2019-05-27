@@ -1,24 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Playables;
 
-public class RaceStarter : MonoBehaviour {
+public class RaceStarter : MonoBehaviour
+{
+    // Checks if cutscene has finished before starting race
 
-    //[SerializeField] private GameObject cutsceneObject;
     [SerializeField] private PlayableDirector cutscene;
-
-	// Use this for initialization
-	void Start ()
-    {
-        //cutscene = cutsceneObject.GetComponent<PlayableDirector>();
-	}
-	
-	// Update is called once per frame
-	void Update ()
-    {
-
-	}
 
     void OnEnable()
     {
@@ -28,7 +15,9 @@ public class RaceStarter : MonoBehaviour {
     void OnPlayableDirectorStopped(PlayableDirector aDirector)
     {
         if (cutscene == aDirector)
-            Debug.Log("PlayableDirector named " + aDirector.name + " is now stopped.");
-        GameManager.instance.SetRaceHasBegun();
+        {
+            //Debug.Log("PlayableDirector named " + aDirector.name + " is now stopped.");
+            GameManager.instance.SetRaceHasBegun();
+        }
     }
 }

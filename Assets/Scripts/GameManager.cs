@@ -1,305 +1,141 @@
-﻿//This script manages the timing and flow of the game. It is also responsible for telling
-//the UI when and how to update
-
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using Cinemachine;
 
-//seperate these
-public enum AIType { Advanced, Middle, Back, Close, Not }
-
-public class Ship
-{
-    private int aiNumber;
-    private string aiName; // for display purposes
-    private AIType aiType;
-    private int currentLap;
-    private int currentWaypoint;
-    private Vector3 currentPosition;
-    private float counter;
-    private PlayerInput aiControl;
-    private bool lapReady = false;
-
-    public Ship(int aiNum, string name, AIType type, int currLap, int currWaypoint, Vector3 currPos)
-    {
-        aiNumber = aiNum;
-        aiName = name;
-        aiType = type;
-        currentLap = currLap;
-        currentWaypoint = currWaypoint;
-        currentPosition = currPos;
-    }
-
-    public Ship(int aiNum, string name, AIType type, int currLap, int currWaypoint, Vector3 currPos, GameObject shipObject)
-    {
-        aiNumber = aiNum;
-        aiName = name;
-        aiType = type;
-        currentLap = currLap;
-        currentWaypoint = currWaypoint;
-        currentPosition = currPos;
-        aiControl = shipObject.GetComponent<PlayerInput>();
-    }
-
-    // Getters
-    public int GetAINumber()
-    {
-        return aiNumber;
-    }
-
-    public string GetAIName()
-    {
-        return aiName;
-    }
-
-    public AIType GetAIType()
-    {
-        return aiType;
-    }
-
-    public int GetCurrLap()
-    {
-        return currentLap;
-    }
-
-    public int GetCurrWaypoint()
-    {
-        return currentWaypoint;
-    }
-
-    public Vector3 GetCurrPos()
-    {
-        return currentPosition;
-    }
-
-    public float GetCounter()
-    {
-        return counter;
-    }
-
-    public bool LapReady()
-    {
-        return lapReady;
-    }
-
-    // Setters
-    public void SetCurrPos(Vector3 currPos)
-    {
-        currentPosition = currPos;
-    }
-
-    public void SetCounter(float counterCalc)
-    {
-        counter = counterCalc;
-    }
-
-    public void IncrementCurrLap()
-    {
-        currentLap++;
-    }
-
-    public void SetCurrWaypoint(int currWaypoint)
-    {
-        currentWaypoint = currWaypoint;
-    }
-
-    public void SetAIType(AIType type)
-    {
-        aiType = type;
-    }
-
-    public void SetShipObject(GameObject shipObject)
-    {
-        aiControl = shipObject.GetComponent<PlayerInput>();
-    }
-
-    public void SetAIBestSkill()
-    {
-        aiControl.BestSkill();
-    }
-
-    public void SetAIMidSkill()
-    {
-        aiControl.MidSkill();
-    }
-
-    public void SetAIWorstSkill()
-    {
-        aiControl.WorstSkill();
-    }
-
-    public void SetLapReady(bool value)
-    {
-        lapReady = value;
-    }
-}
-
 public class GameManager : MonoBehaviour
 {
-	//The game manager holds a public static reference to itself. This is often referred to
-	//as being a "singleton" and allows it to be access from all other objects in the scene.
-	//This should be used carefully and is generally reserved for "manager" type objects
-	public static GameManager instance;
+	[HideInInspector] public static GameManager instance; // a singleton class
+    [HideInInspector] public static bool gameIsPaused = false; // says if game is currently paused or not
 
-    const int NUM_AI_TYPES = 4;
-    const float WAYPOINT_MULTIPLIER = 100.0f;
-    const float LAP_MULTIPLIER = 1000.0f;
-    const float AI_CUTOFF_PERCENT = 0.8f;
-    const float DYNAMIC_DIFF_BEGIN = 5.0f;
-    const float ADV_AI_TARGET_OFFSET = 400.0f;
-    const float MID_AI_TAREGT_OFFSET = 200.0f;
-    const float BACK_AI_TARGET_OFFSET = -400.0f;
-    const float AI_GROUP_RANGE = 100.0f;
-    const int CAM_HIGH_PRIORITY = 10;
-    const int CAM_LOW_PRIORITY = 5;
-
-	[Header("Race Settings")]
-	public int numberOfLaps = 3;			//The number of laps to complete MAGIC OR SET BY PLAYER BEFORE RACE?
-	public VehicleMovement vehicleMovement;	//A reference to the ship's VehicleMovement script
+    // Constants
+    const int NUM_LAPS = 3; // number of laps a race has
+    const int NUM_AI_TYPES = 4; // number of AI types there are (Back, Middle, Advanced and Close)
+    const float WAYPOINT_MULTIPLIER = 100.0f; // to multiply by a vehicles current waypoint index so that vehicle ranking Counter can be calculated
+    const float LAP_MULTIPLIER = 1000.0f; // to multiply by a vehicles current number of laps completed so that vehicle ranking Counter can be calculated
+    const float AI_CUTOFF_PERCENT = 0.8f; // the percentage of race to be completed before DCB becomes less (gives player chance of winning) 0.0f -> 1.0f
+    const float DYNAMIC_DIFF_BEGIN = 5.0f; // number of seconds into the race before DCB is turned on
+    const float ADV_AI_TARGET_OFFSET = 400.0f; // to add to player's Counter as target Counter value for Advanced group AI
+    const float MID_AI_TAREGT_OFFSET = 200.0f; // to add to player's Counter as target Counter value for Middle group AI
+    const float BACK_AI_TARGET_OFFSET = -400.0f; // to add to player's Counter as target Counter value for Back group AI
+    const float AI_GROUP_RANGE = 100.0f; // to create boundary values for range AI's Counter value can be in around it's target Counter value
+    const int CAM_HIGH_PRIORITY = 10; // Cinemachine will prioritise camera with higher value
+    const int CAM_LOW_PRIORITY = 5; // Cinemachine will ignore camera with lower value
+    const KeyCode TOGGLE_HUMAN_AI_KEY = KeyCode.H;
 
 	[Header("UI References")]
-	public ShipUI shipUI;					//A reference to the ship's ShipUI script
-	public LapTimeUI lapTimeUI;				//A reference to the LapTimeUI script in the scene
-	public GameObject gameOverUI;			//A reference to the UI objects that appears when the game is complete
-    public GameObject pausedUI;
-    public static bool gameIsPaused = false;
+	[SerializeField] private ShipUI shipUI;
+	[SerializeField] private LapTimeUI lapTimeUI;
+	[SerializeField] private GameObject gameOverUI;
+    [SerializeField] private GameObject pausedUI;
+    [SerializeField] private AIThoughtsUI aiThoughtsUI;
+    [SerializeField] private PlayerPositionUI playerPosUI;
+    [SerializeField] private RankingUI rankingUI;
 
-	float[] lapTimes;						//An array containing the player's lap times
-	bool isGameOver = false;						//A flag to determine if the game is over
-	bool raceHasBegun = false;                      //A flag to determine if the race has begun
-    [SerializeField] GameObject playerShipObj;
-    Ship playerShip = new Ship(999, "Player", AIType.Not, 0, 0, Vector3.zero); // to store player ship details
-    
-    // AI
-    [SerializeField] GameObject[] aiVehicles; // needed for correct count and reference to the car's attributes i.e. the gameobjects themselves
-    Ship[] aiShips; // race data about the ai
-    public AIThoughtsUI aiThoughtsUI;
+    // Race Management
+	private bool isGameOver = false; // flag to say if the race has finished
+	private bool raceHasBegun = false; // flag to say if the race has started
+    private int numberOfLaps = NUM_LAPS; // number of laps player must complete
+    [Header("Race Managament References")] // will only show up in inspector if variable below it is serialised or public... ugh
+    [SerializeField] private GameObject waypointsObj; // to find the positions of each waypoint (the parent object of the waypoints)
+    private Vector3[] waypoints; // array of all waypoint world positions, to calculate path covered between waypoints
+    private List<Ship> racePositions; // list of vehicle rankings in race (to be sorted)
+    private float timer = 0.0f; // to count from start of race to when AI should start using DCB
+    private float oneLapCountVal; // the Counter value of one lap (used as bonus addition to rectify Counter bug and to calculate entireRaceCountVal)
+    private float entireRaceCountVal; // the Counter value of an entire race, to calculate the cut off point for DCB
+    private float aiCutOffCountVal; // the Counter value that, once an AI has passed, it will reduce skill to give player chance
 
-    // Race management
-    [SerializeField] GameObject waypointsObj; // to find the exact position of a waypoint (the parent object of the waypoints)
-    Vector3[] waypoints;
-    List<Ship> racePositions; // ordered list of car rankings in race
-    public PlayerPositionUI playerPosUI;
-    public RankingUI rankingUI;
-    float timer = 0.0f; // to count to when ai should start reacting at start of race (after a few seconds)
-    float oneLapCountVal; // the counter value of one lap (used as bonus addition to rectify counter bug and to calculate entireRaceCountVal)
-    float entireRaceCountVal; // the counter value of the entire race - not sure we actually need it as it's own variable as it's not used anywhere else
-    float aiCutOffCountVal; // counter value where once ai has passed it will reduce skill to give player chance (80% of race)
+    [Header("Vehicle References")]
+    [SerializeField] private GameObject playerShipObj; // reference to player ship gameobject, mainly for positional information
+    [SerializeField] private VehicleMovement vehicleMovement; // to know how fast the player vehicle is going for UI
+    private Ship playerShip = new Ship(999, "Player", AIType.Not, 0, 0, Vector3.zero); // to store player ship information such as ID and ranking Counter
+    private float[] lapTimes; // array of player's lap times (for UI purposes)
+    [SerializeField] private GameObject[] aiVehicles; // reference to AI ships for correct count of AI and positional information
+    private Ship[] aiShips; // to store AI ship information such as ID and ranking Counter
 
-    // Camera management
-    [SerializeField] GameObject followCameraObj; // for viewing ship from behind
-    [SerializeField] GameObject hoverCameraObj; // for viewing ship from above
-    CinemachineVirtualCamera followCam;
-    CinemachineVirtualCamera hoverCam;
-    KeyCode toggleHumanButton = KeyCode.H;
+    [Header("Camera References")]
+    [SerializeField] private GameObject followCameraObj; // for viewing ship from behind
+    [SerializeField] private GameObject hoverCameraObj; // for viewing ship from above
+    private CinemachineVirtualCamera followCam;
+    private CinemachineVirtualCamera hoverCam;
 
 
 	void Awake()
 	{
-		//If the variable instance has not be initialized, set it equal to this
-		//GameManager script...
-		if (instance == null)
-			instance = this;
-		//...Otherwise, if there already is a GameManager and it isn't this, destroy this
-		//(there can only be one GameManager)
-		else if (instance != this)
-			Destroy(gameObject);
+        // Singleton, if there's no GameManager instance already, make this one it
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else if (instance != this) // if there already is a GameManager instance then delete this one
+        {
+            Destroy(gameObject);
+        }
 	}
 
 	void OnEnable()
 	{
-		//When the GameManager is enabled, we start a coroutine to handle the setup of
-		//the game. It is done this way to allow our intro cutscene to work. By slightly
-		//delaying the start of the race, we give the cutscene time to take control and 
-		//play out
+        // Coroutine to allow initalisation of race data while cutscene countdown plays
 		StartCoroutine(Init());
 	}
 
 	IEnumerator Init()
 	{
-		//Update the lap number on the ship
+        // Initialise UI
 		UpdateUI_LapNumber();
-
-		//Wait a little while to let everything initialize
-		yield return new WaitForSeconds(.1f);
-
-		//Initialize the lapTimes array and set that the race has begun
 		lapTimes = new float[numberOfLaps];
-		//raceHasBegun = true;
 
-        //Initialise Player
+        // Initialise Player
         playerShip.SetCurrPos(playerShipObj.transform.position);
-
-        // Set now just in case player wants to watch AI
+ 
+        // Initialise AI version of Player
         playerShip.SetShipObject(playerShipObj);
         playerShip.SetAIMidSkill();
 
-        //Initialise AI
-        //Vector3[] positions = new Vector3[8]; // MAGIC - although technically a const array of offsets?
-        //positions[0] = new Vector3(0.0f, 0.0f, 10.0f);
-        //positions[1] = new Vector3(0.0f, 0.0f, 5.0f);
-        //// player car here (0.0f, 0.0f, 0.0f)
-        //positions[2] = new Vector3(0.0f, 0.0f, -5.0f);
-        //positions[3] = new Vector3(-7.5f, 0.0f, 12.5f);
-        //positions[4] = new Vector3(-7.5f, 0.0f, 7.5f);
-        //positions[5] = new Vector3(-7.5f, 0.0f, 2.5f);
-        //positions[6] = new Vector3(-7.5f, 0.0f, -2.5f);
-        //positions[7] = new Vector3(-7.5f, 0.0f, -7.5f);
-        // MAGIC
-        string[] aiNames = new string[8] { "Mario", "Luigi", "Peach", "Toad", "Yoshi", "Bowser", "Daisy", "Wario" };
-
+        // Initialise AI
+        string[] aiNames = new string[8] { "Mario", "Luigi", "Peach", "Toad", "Yoshi", "Bowser", "Daisy", "Wario" }; // MAGIC
         aiShips = new Ship[aiVehicles.Length];
         for (int i = 0; i < aiShips.Length; i++)
         {
-            //aiVehicles[i].transform.rotation = playerShipObj.transform.rotation;
-            //aiVehicles[i].transform.position = playerShipObj.transform.position + positions[i];
             aiShips[i] = new Ship(i, aiNames[i], (AIType)(i % NUM_AI_TYPES), 0, 0, aiVehicles[i].transform.position, aiVehicles[i]);
-            aiShips[i].SetAIBestSkill(); // check if race has been going for number of seconds before activating dynamic difficulty
+            aiShips[i].SetAIBestSkill(); // for strong start (helps form groups)
         }
-        for (int i = 0; i < aiShips.Length; i++)
-        {
-            Debug.Log(aiShips[i].GetAINumber() + " has type " + aiShips[i].GetAIType().ToString());
-        }
+        //for (int i = 0; i < aiShips.Length; i++)
+        //{
+        //    Debug.Log(aiShips[i].GetAINumber() + " has type " + aiShips[i].GetAIType().ToString());
+        //}
 
-        //Initialise Race Ranking
-        racePositions = new List<Ship>(aiVehicles.Length + 1); // + 1 for player car
-
-        //Initialise Waypoints
+        // Initialise Race Management
+        racePositions = new List<Ship>(aiVehicles.Length + 1); // + 1 for Player vehicle
         waypoints = new Vector3[waypointsObj.transform.childCount];
         for (int i = 0; i < waypoints.Length; i++)
         {
             waypoints[i] = waypointsObj.transform.GetChild(i).transform.position;
         }
 
-        //Calculate race counter values
+        // Calculate race Counter values
         oneLapCountVal = waypoints.Length * WAYPOINT_MULTIPLIER;
-        entireRaceCountVal = (oneLapCountVal * numberOfLaps) + ((numberOfLaps - 1) * LAP_MULTIPLIER); // - 1 because 1st lap does not require bonus
+        entireRaceCountVal = (oneLapCountVal * numberOfLaps) + /* >>> LAP BONUS TO AVOID COUNTER ERROR >>> */ ((numberOfLaps - 1) * LAP_MULTIPLIER); // - 1 because 1st lap does not require bonus
         //Debug.Log(entireRaceCountVal);
         aiCutOffCountVal = entireRaceCountVal * AI_CUTOFF_PERCENT;
 
-        //Initialise Cameras
+        // Initialise Cameras
         followCam = followCameraObj.GetComponent<CinemachineVirtualCamera>();
         hoverCam = hoverCameraObj.GetComponent<CinemachineVirtualCamera>();
 
-	}
+        yield return new WaitForSeconds(.1f);
+    }
 
-	void Update()
+    void Update()
 	{
-        //Update the speed on the ship UI
-        UpdateUI_Speed ();
+        UpdateUI_Speed();
 
-		//If we have an active game...
 		if (IsActiveGame())
 		{
-            if (rankingUI != null)
-            {
-                rankingUI.EnableRankingList();
-            }
+            UpdateRacePositions(); // to update race rankings
 
-            UpdateRacePositions(); // MAKE A NICE LIST ON SCREEN FOR THIS
-            
+            // DEBUG Output Player's Counter value
             //for (int i = 0; i < racePositions.Capacity; i++)
             //{
             //    if (racePositions[i].GetAINumber() == 999)
@@ -308,21 +144,21 @@ public class GameManager : MonoBehaviour
             //    }
             //}
 
-            timer += Time.deltaTime;
+            if (rankingUI != null)
+            {
+                rankingUI.EnableRankingList();
+            }
+
+            timer += Time.deltaTime; // increment timer for DCB start
             if (timer > DYNAMIC_DIFF_BEGIN)
             {
-                if (aiThoughtsUI != null)
-                {
-                    aiThoughtsUI.EnableAIThoughtsList();
-                }
-
                 // Dynamic Difficulty Adjust
-                float playerShipCounter = playerShip.GetCounter(); // so that we know where the player ship is
+                float playerShipCounter = playerShip.GetCounter(); // so that we know where the Player ship is
                 for (int i = 0; i < aiShips.Length; i++)
                 {
-                    float aiShipCounter = aiShips[i].GetCounter(); // so that we know where the ai ship is
+                    float aiShipCounter = aiShips[i].GetCounter(); // so that we know where the AI ship is
 
-                    // based on what ai type it is (and what position it is in relative to player) update the ai skill
+                    // based on what AI type it is (and what position it is in relative to player) update the AI skill
                     if (aiShips[i].GetAIType() == AIType.Advanced)
                     {
                         UpdateSkillRequirements(playerShipCounter, ADV_AI_TARGET_OFFSET, aiShipCounter, ref aiShips[i]);
@@ -340,17 +176,22 @@ public class GameManager : MonoBehaviour
                         UpdateSkillRequirements(playerShipCounter, 0.0f, aiShipCounter, ref aiShips[i]);
                     }
                 }
+
+                if (aiThoughtsUI != null)
+                {
+                    aiThoughtsUI.EnableAIThoughtsList();
+                }
             }
 
-            //...calculate the time for the lap and update the UI
-            lapTimes[playerShip.GetCurrLap()] += Time.deltaTime;
+            lapTimes[playerShip.GetCurrLap()] += Time.deltaTime; // calculate time for Player's lap
 			UpdateUI_LapTime();
 
             // Toggle Human or AI Driver
-            if (Input.GetKeyDown(toggleHumanButton))
+            if (Input.GetKeyDown(TOGGLE_HUMAN_AI_KEY))
             {
                 playerShipObj.GetComponent<PlayerInput>().ToggleIsHuman();
 
+                // change camera priority based on Player's human/AI status
                 if (playerShipObj.GetComponent<PlayerInput>().isHuman)
                 {
                     followCam.Priority = CAM_HIGH_PRIORITY;
@@ -367,17 +208,17 @@ public class GameManager : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Alpha1))
             {
                 playerShip.SetAIBestSkill();
-                Debug.Log("Human/AI has best skill");
+                //Debug.Log("Human/AI has best skill");
             }
             else if (Input.GetKeyDown(KeyCode.Alpha2))
             {
                 playerShip.SetAIMidSkill();
-                Debug.Log("Human/AI has mid skill");
+                //Debug.Log("Human/AI has mid skill");
             }
             else if (Input.GetKeyDown(KeyCode.Alpha3))
             {
                 playerShip.SetAIWorstSkill();
-                Debug.Log("Human/AI has worst skill");
+                //Debug.Log("Human/AI has worst skill");
             }
 
             // Pause and Resume()
@@ -395,7 +236,7 @@ public class GameManager : MonoBehaviour
         }
 	}
 
-    public float GetFractionOfPathCovered(Vector3 position, Vector3 currWaypoint, Vector3 nextWaypoint)
+    public float GetFractionOfPathCovered(Vector3 position, Vector3 currWaypoint, Vector3 nextWaypoint) // calculates distance covered between 2 waypoint positions
     {
         Vector3 distFromCurrWaypoint = position - currWaypoint;
         Vector3 currSegmentVector = nextWaypoint - currWaypoint;
@@ -406,6 +247,7 @@ public class GameManager : MonoBehaviour
 
     public void UpdateRacePositions()
     {
+        // clear and then refill race ranking array with updated information
         racePositions.Clear();
         playerShip.SetCurrPos(playerShipObj.transform.position);
         racePositions.Add(playerShip);
@@ -415,14 +257,15 @@ public class GameManager : MonoBehaviour
             racePositions.Add(aiShips[i]);
         }
 
-        // calculate the counter value for each car, then sort it based on this value to determine who is what rank
+        // calculate the Counter value for each vehicle, then sort it based on this value to determine who is what rank
         for (int i = 0; i < racePositions.Capacity; i++)
         {
             float distFromPrevWaypoint = GetFractionOfPathCovered(racePositions[i].GetCurrPos(), waypoints[racePositions[i].GetCurrWaypoint() % waypoints.Length], waypoints[(racePositions[i].GetCurrWaypoint() + 1) % waypoints.Length]);
-            racePositions[i].SetCounter(racePositions[i].GetCurrLap() * LAP_MULTIPLIER + racePositions[i].GetCurrWaypoint() * WAYPOINT_MULTIPLIER + distFromPrevWaypoint + (oneLapCountVal * racePositions[i].GetCurrLap()));
+            racePositions[i].SetCounter(racePositions[i].GetCurrLap() * LAP_MULTIPLIER + racePositions[i].GetCurrWaypoint() * WAYPOINT_MULTIPLIER + distFromPrevWaypoint + /* LAP BONUS TO AVOID COUNTER ERRORS */ (oneLapCountVal * racePositions[i].GetCurrLap()));
         }
         racePositions.Sort(delegate (Ship s1, Ship s2) { return s2.GetCounter().CompareTo(s1.GetCounter()); });
 
+        // update information for race ranking UI
         for (int i = 0; i < racePositions.Capacity; i++)
         {
             string driverName = racePositions[i].GetAIName() + " (" + racePositions[i].GetAIType().ToString()[0] + ")";
@@ -440,14 +283,14 @@ public class GameManager : MonoBehaviour
         int aiNumber = aiShip.GetAINumber();
         string aiName = aiShip.GetAIName();
 
-        float targetPos = playerCounter + targetOffset; // calculate the target position of the ai ship
+        float targetPos = playerCounter + targetOffset; // calculate the target position for the AI ship
 
         // if they are in the last section of the race
         if (aiCounter >= aiCutOffCountVal)
         {
-            if (aiShip.GetAIType() != AIType.Back) // stops back group increasing skill
+            if (aiShip.GetAIType() != AIType.Back) // stops Back group increasing skill
             {
-                if (aiCounter > playerCounter) // only if ai is ahead of the player
+                if (aiCounter > playerCounter) // only if AI is ahead of the player
                 {
                     //Debug.Log("Turning off my dynamic difficulty to give player a chance!");
                     aiShip.SetAIMidSkill();
@@ -484,46 +327,35 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    //Called by the FinishLine script
-    public void PlayerCompletedLap()
+    public void PlayerCompletedLap() // called by FinishLine
 	{
-		//If the game is already over exit this method 
 		if (isGameOver)
 			return;
 
-		//Incrememebt the current lap and reset waypoints
+		// increment current lap and clear waypoint count
 		playerShip.IncrementCurrLap();
         playerShip.SetCurrWaypoint(0);
 
-		//Update the lap number UI on the ship
-		UpdateUI_LapNumber ();
+		UpdateUI_LapNumber();
 
-		//If the player has completed the required amount of laps...
+		// If Player has completed the number of laps the game is over
 		if (playerShip.GetCurrLap() >= numberOfLaps)
-		{
-			//...the game is now over...
+        { 
 			isGameOver = true;
-			//...update the laptime UI...
 			UpdateUI_FinalTime();
-			//...and show the Game Over UI
 			gameOverUI.SetActive(true);
 		}
 	}
 
     public void AICompletedLap(int aiNum)
     {
-        if (isGameOver || !aiShips[aiNum].LapReady()) // or AI not ready ADD THIS
+        if (isGameOver || !aiShips[aiNum].LapReady()) // or AI has not passed LapChecker (to avoid race start errors where FinishLine is always active for AI)
             return;
 
+        // increment current lap, clear waypoint count and reset LapChecker bool
         aiShips[aiNum].IncrementCurrLap();
         aiShips[aiNum].SetCurrWaypoint(0);
         aiShips[aiNum].SetLapReady(false);
-
-        if (aiShips[aiNum].GetCurrLap() >= numberOfLaps)
-        {
-            //Debug.Log("AI " + aiNum + " HAS FINISHED RACE");
-            // it's ai? probs just keep going
-        }
     }
 
     public void AIPassedLapChecker(int aiNum)
@@ -545,39 +377,42 @@ public class GameManager : MonoBehaviour
 
 	void UpdateUI_LapTime()
 	{
-		//If we have a LapTimeUI reference, update it
-		if (lapTimeUI != null)
-			lapTimeUI.SetLapTime(playerShip.GetCurrLap(), lapTimes[playerShip.GetCurrLap()]);
+        if (lapTimeUI != null)
+        {
+            lapTimeUI.SetLapTime(playerShip.GetCurrLap(), lapTimes[playerShip.GetCurrLap()]);
+        }
 	}
 
 	void UpdateUI_FinalTime()
 	{
-		//If we have a LapTimeUI reference... 
 		if (lapTimeUI != null)
 		{
-			float total = 0f;
+			float total = 0.0f;
 
-			//...loop through all of the lapTimes and total up an amount...
-			for (int i = 0; i < lapTimes.Length; i++)
-				total += lapTimes[i];
+            // loop through all lapTimes and calculate total amount
+            for (int i = 0; i < lapTimes.Length; i++)
+            {
+                total += lapTimes[i];
+            }
 
-			//... and update the final race time
 			lapTimeUI.SetFinalTime(total);
 		}
 	}
 
 	void UpdateUI_LapNumber()
 	{
-		//If we have a ShipUI reference, update it
-		if (shipUI != null) 
-			shipUI.SetLapDisplay (playerShip.GetCurrLap() + 1, numberOfLaps);
+        if (shipUI != null)
+        {
+            shipUI.SetLapDisplay(playerShip.GetCurrLap() + 1, numberOfLaps);
+        }
 	}
 
 	void UpdateUI_Speed()
 	{
-		//If we have a VehicleMovement and ShipUI reference, update it
-		if (vehicleMovement != null && shipUI != null) 
-			shipUI.SetSpeedDisplay (Mathf.Abs(vehicleMovement.speed));
+        if (vehicleMovement != null && shipUI != null)
+        {
+            shipUI.SetSpeedDisplay(Mathf.Abs(vehicleMovement.speed));
+        }
 	}
 
     void UpdateUI_PlayerPos(int playerPos)
@@ -598,13 +433,12 @@ public class GameManager : MonoBehaviour
 
 	public bool IsActiveGame()
 	{
-		//If the race has begun and the game is not over, we have an active game
+		// if the race has begun and the game is not over, it's an active game
 		return raceHasBegun && !isGameOver;
 	}
 
 	public void Restart()
 	{
-		//Restart the scene by loading the scene that is currently loaded
 		SceneManager.LoadScene(SceneManager.GetActiveScene().name);
 	}
 

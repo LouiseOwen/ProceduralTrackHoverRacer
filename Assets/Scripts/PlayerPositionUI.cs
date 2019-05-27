@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 
-public class PlayerPositionUI : MonoBehaviour {
-
+public class PlayerPositionUI : MonoBehaviour
+{
     public TextMeshProUGUI playerPosLabel;
 
     private void Awake()

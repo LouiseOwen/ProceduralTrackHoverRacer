@@ -1,9 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class StartMenu : MonoBehaviour {
-
+public class StartMenu : MonoBehaviour
+{
     [SerializeField] private GameObject startMenuUI;
     [SerializeField] private GameObject road;
 
@@ -13,7 +11,7 @@ public class StartMenu : MonoBehaviour {
     [SerializeField] private Camera leftCamera;
     [SerializeField] private GameObject rightCamera;
 
-    Rect singleScreen = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
+    private Rect singleScreen = new Rect(0.0f, 0.0f, 1.0f, 1.0f);
 
     public void SetStartMenuActive(bool value)
     {

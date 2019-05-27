@@ -1,10 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class AIThoughtsUI : MonoBehaviour {
-
+public class AIThoughtsUI : MonoBehaviour
+{
     public GameObject aiThoughtsPanel;
     public Text[] aiThoughts;
 

@@ -1,14 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.AI;
-using UnityEngine.Playables;
 
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
 [RequireComponent(typeof(MeshCollider))]
 public class StartMenuRoad : MonoBehaviour
 {
+    // Simplified RoadMaker for start menu track demo
+
     const float WAYPOINT_DIFF = 16.0f; //22.5f; // difference in angle to place next waypoint WEIRD ERRORS AT 15.0F
 
     public float radius /*= 90.0f*/; // can be pretty much anything (better to be positive), just says how big the circle is N.B. bigger radius smooths waviness (probably cap this variable)

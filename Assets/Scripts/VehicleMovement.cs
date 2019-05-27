@@ -2,7 +2,7 @@
 
 public class VehicleMovement : MonoBehaviour
 {
-	public float speed; // current speed of the ship MAKE GETTERS FOR THIS CLASS
+	public float speed; // current speed of the ship
 
 	// Drive Settings
 	private float driveForce = 17.0f; // force that the engine generates

@@ -1,12 +1,10 @@
-﻿//The class handles calculating a desired value based on a PID algorithm
-//This code is not specific to this game and is instead how PID algorithms work
-//in electronics, robotics, and controlling software
-
-using UnityEngine;
+﻿using UnityEngine;
 
 [System.Serializable]
 public class PIDController
 {
+    // Class calculates how much power is needed to hover based on a PID algorithm
+
 	//Our PID coefficients for tuning the controller
 	public float pCoeff = .8f;
 	public float iCoeff = .0002f;
