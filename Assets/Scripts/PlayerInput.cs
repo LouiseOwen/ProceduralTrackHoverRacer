@@ -2,7 +2,7 @@
 
 public class PlayerInput : MonoBehaviour
 {
-    const float ACCEL_RESTRICT = 0.75f;
+    const float ACCEL_RESTRICT = 0.65f;
 
     public bool isHuman;
 
